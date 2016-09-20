@@ -56,8 +56,14 @@ coverage.xml
 *.log
 local_settings.py
 
+<<<<<<< HEAD
 # Flask instance folder
 instance/
+=======
+# Flask stuff:
+instance/
+.webassets-cache
+>>>>>>> b485354b7e096ce30b43d6cddc50df768dcd525a
 
 # Scrapy stuff:
 .scrapy
@@ -87,4 +93,6 @@ ENV/
 # Spyder project settings
 .spyderproject
 
+# Rope project settings
+.ropeproject
 # Created by .ignore support plugin (hsz.mobi)
