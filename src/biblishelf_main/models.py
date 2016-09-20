@@ -20,7 +20,7 @@ class Driver(models.Model):
         null=True,
         blank=True
     )
-    online_status = models.BooleanField(
+    online_status = models.NullBooleanField(
         null=True,
         blank=True
     )
