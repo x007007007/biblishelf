@@ -1,4 +1,4 @@
 django
 watchdog
-
+Pillow
 psutil
