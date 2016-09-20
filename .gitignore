@@ -1,5 +1,5 @@
-.idea
-.repoproject
+.*
+db.sqlite3
 ### Python template
 # Byte-compiled / optimized / DLL files
 __pycache__/
