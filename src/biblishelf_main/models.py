@@ -16,6 +16,11 @@ class Driver(models.Model):
         null=True,
         blank=True
     )
+    fs = models.CharField(
+        max_length=32,
+        null=True,
+        blank=True
+    )
     extend_info = models.TextField(
         null=True,
         blank=True
@@ -24,6 +29,8 @@ class Driver(models.Model):
         null=True,
         blank=True
     )
+    last_online_time = models.DateTimeField(auto_now_add=True, null=True)
+    uri = models.CharField(max_length=254, null=True, blank=True)
 
     def is_online(self):
         """

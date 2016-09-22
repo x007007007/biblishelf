@@ -5,7 +5,7 @@ import os, re
 
 
 class DriverAdmin(admin.ModelAdmin):
-    list_display = ('name', 'uuid')
+    list_display = ('name', 'uuid', 'uri', 'fs', 'last_online_time')
 
 
 class ResourceMapAdmin(admin.ModelAdmin):
