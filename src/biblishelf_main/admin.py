@@ -5,7 +5,13 @@ import os, re
 
 
 class DriverAdmin(admin.ModelAdmin):
-    list_display = ('name', 'uuid', 'uri', 'fs', 'last_online_time')
+    readonly_fields = ('dev_path',)
+    list_display = ('name', 'uuid', 'uri', 'fs', 'dev_path', 'last_online_time')
+
+    def action_refresh_mount_point(self, request, queryset):
+        Driver.refresh_mount_db()
+
+    actions = (action_refresh_mount_point,)
 
 
 class ResourceMapAdmin(admin.ModelAdmin):

@@ -1,10 +1,17 @@
 from django.db import models
-
+import os
+import psutil
+import json
+import logging
+import datetime
+import pytz
+logger = logging.Logger(__name__)
 # Create your models here.
 
 
 class Driver(models.Model):
-    name = models.CharField(max_length=128)
+    META_PATH = ".biblishelf/disk.json"
+    name = models.CharField(max_length=128, blank=True, null=True)
     uuid = models.CharField("Volumn", max_length=128)
     type = models.CharField(
         choices=(
@@ -16,6 +23,7 @@ class Driver(models.Model):
         null=True,
         blank=True
     )
+    dev_path = models.CharField(max_length=128, null=True, blank=True)
     fs = models.CharField(
         max_length=32,
         null=True,
@@ -32,14 +40,59 @@ class Driver(models.Model):
     last_online_time = models.DateTimeField(auto_now_add=True, null=True)
     uri = models.CharField(max_length=254, null=True, blank=True)
 
+    @classmethod
+    def refresh_mount_db(cls):
+        """
+        refresh mount info ,check new storage repo
+        :return: found new mount event
+        """
+        logger.debug("refresh_mount_db")
+        update_num = 0
+        for partition in psutil.disk_partitions(all=True):
+            logging.debug("partition", partition)
+            if cls.objects.filter(uri=partition.mountpoint, dev_path=partition.device).count() == 1:
+                continue
+            else:
+                meta_path = os.path.join(partition.mountpoint, cls.META_PATH)
+                if os.path.exists(meta_path):
+                    try:
+                        with open(meta_path) as fp:
+                            puid = json.load(fp).get("uuid")
+                            logger.debug("find puid", puid)
+                            if puid:
+                                update_num += cls.objects.filter(
+                                    models.Q(uuid=puid),
+                                    ~models.Q(uri=partition.mountpoint, dev_path=partition.device)
+                                ).update(
+                                    uri=partition.mountpoint,
+                                    dev_path=partition.device,
+                                    last_online_time=datetime.datetime.now(pytz.UTC)
+                                )
+                    except (json.JSONDecodeError, PermissionError, FileNotFoundError) as e:
+                        import traceback
+                        traceback.print_exc()
+                        continue
+        if update_num > 0:
+            return True
+        return False
+
     def is_online(self):
         """
         :return: bool
         """
         return self.online_status
 
-    def get_path(self):
-        pass
+    def get_mount_path(self):
+        if os.path.exists(self.get_meta_path()):
+            return self.uri
+        else:
+            self.uri = None
+            self.save(update_fields=["uri"])
+        return None
+
+    def get_meta_path(self):
+        return os.path.join(self.uri, self.META_PATH)
+
 
 
 class Resource(models.Model):
@@ -71,6 +124,7 @@ class ExtendResource(models.Model):
 
     class Meta:
         abstract = True
+
 
 class ConfigWatchArea(models.Model):
     driver = models.ForeignKey(Driver, related_name="WatchAreas")

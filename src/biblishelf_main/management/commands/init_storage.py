@@ -39,6 +39,9 @@ class Command(BaseCommand):
             warnings.warn("init conf failure", ResourceWarning)
         raise RecursionError
 
+    def add_arguments(self, parser):
+        pass
+
     def handle(self, *args, **options):
         for partition in psutil.disk_partitions():
             conf_path = os.path.join(partition.mountpoint, ".biblishelf/disk.json")
