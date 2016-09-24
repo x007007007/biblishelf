@@ -11,6 +11,9 @@ logger = logging.Logger(__name__)
 # Create your models here.
 
 
+class RopeNotExist(models.ObjectDoesNotExist): pass
+
+
 class Repo(models.Model):
     META_PATH = ".biblishelf/disk.json"
     MOUNT = "mount"
@@ -95,7 +98,7 @@ class Repo(models.Model):
 
     def get_mount_path(self):
         if os.path.exists(self.get_meta_path()):
-            return self.uri
+            return self.uri if self.uri.endswith(os.sep) else self.uri + os.sep
         else:
             self.uri = None
             self.save(update_fields=["uri"])
@@ -117,33 +120,40 @@ class Resource(models.Model):
         unique_together = ["size", "sha"]
 
     @classmethod
-    def create_or_get_from_abs_path(cls, path):
+    def get_or_create_from_fp(cls, fp):
+        assert fp.mode == "rb"
         md5 = hashlib.md5()
         sha1 = hashlib.sha1()
         ed2k =hashlib.new('md4')
         mine_type = None
         size = 0
-        with open(path, "rb") as fp:
+        fp.seek(0)
+
+        chuck = fp.read(9500*1024)
+        ed2k.update(hashlib.new('md4', chuck).digest())
+        sha1.update(chuck)
+        md5.update(chuck)
+        mine_type = magic.from_buffer(chuck)
+        size += len(chuck)
+        while len(chuck) == 9500*1024:
             chuck = fp.read(9500*1024)
-            ed2k.update(hashlib.new('md4', chuck).digest())
+            ed2k.update(hashlib.new('md4',chuck).digest())
             sha1.update(chuck)
             md5.update(chuck)
-            mine_type = magic.from_buffer(chuck)
             size += len(chuck)
-            while len(chuck) == 9500*1024:
-                chuck = fp.read(9500*1024)
-                ed2k.update(hashlib.new('md4',chuck).digest())
-                sha1.update(chuck)
-                md5.update(chuck)
-                size += len(chuck)
         res, is_create = cls.objects.get_or_create(
             size=size,
-            sha=sha1,
-            md5=md5,
-            ed2k=ed2k,
+            sha=sha1.hexdigest(),
+            md5=md5.hexdigest(),
+            ed2k_hash=ed2k.hexdigest(),
             mine_type=mine_type
         )
-        return res
+        return res, is_create
+
+    @classmethod
+    def get_or_create_from_abs_path(cls, path):
+        with open(path, "rb") as fp:
+            return cls.get_or_create_from_fp(fp)
 
 
 class ResourceMap(models.Model):
@@ -154,16 +164,23 @@ class ResourceMap(models.Model):
     modify_time = models.DateTimeField(null=True, blank=True, help_text="help check out danger file")
 
     @classmethod
-    def create_or_update_by_abs_path(cls, path, rope=None):
-        if rope_paths is None:
-            rope = list(Repo.objects.all())
-        for rope in sorted(rope, cmp=lambda x, y: cmp(len(x.uri), len(y.uri)), reverse=True):
-            if path.startswith(repo.uri):
-
-                ResourceMap.create_or_update(
+    def create_or_update_by_abs_path(cls, path, ropes=None):
+        if ropes is None:
+            ropes = list(Repo.objects.all())
+        for repo in sorted(ropes, key=lambda x: len(x.uri), reverse=True):
+            if path.startswith(repo.get_mount_path()):
+                res, _ = Resource.get_or_create_from_abs_path(path)
+                resmap, is_create = ResourceMap.objects.update_or_create(
                     path=path[len(repo.uri):],
-                    repo=repo
+                    repo=repo,
+                    resource=res,
+                    defaults={
+                        "create_time": datetime.datetime.fromtimestamp(os.path.getctime(path), tz=pytz.UTC),
+                        "modify_time": datetime.datetime.fromtimestamp(os.path.getmtime(path), tz=pytz.UTC)
+                    }
                 )
+                return resmap
+        raise RopeNotExist()
 
     @classmethod
     def find_by_abs_path(cls, path):
@@ -184,7 +201,10 @@ class ResourceMap(models.Model):
             return None
 
     def get_abs_path(self):
-        return os.path.join(self.repo.get_path(), self.path)
+        if self.path.startswith(os.sep):
+            self.path = self.path[1:]
+            self.save(update_fields=["path"])
+        return os.path.join(self.repo.get_mount_path(), self.path)
 
 
 class ResourceAuthor(models.Model):
@@ -193,10 +213,13 @@ class ResourceAuthor(models.Model):
 
 class ExtendResource(models.Model):
     name = models.CharField(max_length=64)
-    resource = models.ForeignKey(ResourceMap, null=True)
+    resource = models.ForeignKey(Resource, null=True)
 
     class Meta:
         abstract = True
+
+    def is_extend(self):
+        return True
 
 
 class ConfigWatchArea(models.Model):

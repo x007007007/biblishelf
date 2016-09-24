@@ -1,7 +1,14 @@
 from django.contrib import admin
 from .models import ResourceMap, Repo, ConfigWatchArea, Resource
+from django.utils.safestring import mark_safe
+from django.core import urlresolvers
 # Register your models here.
-import os, re
+import os
+import re
+
+
+class ResrouceMapInline(admin.TabularInline):
+    model = ResourceMap
 
 
 class RepoAdmin(admin.ModelAdmin):
@@ -22,14 +29,26 @@ class ResourceMapAdmin(admin.ModelAdmin):
 
 
 class ConfigWatchAreaAdmin(admin.ModelAdmin):
+
     list_display = ('repo', 'path')
     list_filter = ('repo',)
 
 
 class ResourceAdmin(admin.ModelAdmin):
-    readonly_fields = ('size', 'sha')
-    search_fields = ('name', 'sha')
+    readonly_fields = ('size', 'sha', 'md5', 'ed2k_hash', 'mine_type', 'show_all_resource_path')
+    search_fields = ('name', 'sha', 'mine_type')
     list_display = ('name', 'sha', 'size')
+    list_filter = ('mine_type',)
+
+    def show_all_resource_path(self, obj):
+        rm_list = []
+        for rm in obj.Map.all():
+            print(rm)
+            change_url = urlresolvers.reverse('admin:biblishelf_main_resourcemap_change', args=(rm.pk,))
+            rm_list.append(
+                '<a href="{}" tager="_blank">path:{}</a>'.format(change_url, rm.get_abs_path())
+            )
+        return mark_safe("<br />".join(rm_list))
 
     def action_get_name(self, request, queryset):
         for r in queryset:
