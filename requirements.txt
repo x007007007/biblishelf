@@ -2,3 +2,4 @@ django
 watchdog
 Pillow
 psutil
+python-magic

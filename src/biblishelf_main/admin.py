@@ -1,15 +1,15 @@
 from django.contrib import admin
-from .models import ResourceMap, Driver, ConfigWatchArea, Resource
+from .models import ResourceMap, Repo, ConfigWatchArea, Resource
 # Register your models here.
 import os, re
 
 
-class DriverAdmin(admin.ModelAdmin):
+class RepoAdmin(admin.ModelAdmin):
     readonly_fields = ('dev_path',)
     list_display = ('name', 'uuid', 'uri', 'fs', 'dev_path', 'last_online_time')
 
     def action_refresh_mount_point(self, request, queryset):
-        Driver.refresh_mount_db()
+        Repo.refresh_mount_db()
 
     actions = (action_refresh_mount_point,)
 
@@ -18,12 +18,12 @@ class ResourceMapAdmin(admin.ModelAdmin):
     readonly_fields = ('path',)
     list_display = ('path',)
     search_fields = ('path',)
-    list_filter = ('driver',)
+    list_filter = ('repo',)
 
 
 class ConfigWatchAreaAdmin(admin.ModelAdmin):
-    list_display = ('driver', 'path')
-    list_filter = ('driver',)
+    list_display = ('repo', 'path')
+    list_filter = ('repo',)
 
 
 class ResourceAdmin(admin.ModelAdmin):
@@ -55,6 +55,6 @@ class ResourceAdmin(admin.ModelAdmin):
     actions = (action_get_name,)
 
 admin.site.register(ResourceMap, ResourceMapAdmin)
-admin.site.register(Driver, DriverAdmin)
+admin.site.register(Repo, RepoAdmin)
 admin.site.register(ConfigWatchArea, ConfigWatchAreaAdmin)
 admin.site.register(Resource, ResourceAdmin)

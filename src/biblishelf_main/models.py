@@ -5,11 +5,13 @@ import json
 import logging
 import datetime
 import pytz
+import hashlib
+import magic
 logger = logging.Logger(__name__)
 # Create your models here.
 
 
-class Driver(models.Model):
+class Repo(models.Model):
     META_PATH = ".biblishelf/disk.json"
     MOUNT = "mount"
     USER_SET = "set"
@@ -61,7 +63,7 @@ class Driver(models.Model):
                             puid = json.load(fp).get("uuid")
                             logger.debug("find puid", puid)
                             if puid:
-                                update_num += cls.objects.filter(
+                                update_num += cls.objects.filter(   # how many exists repo change mountpoint info
                                     models.Q(uuid=puid),
                                     ~models.Q(uri=partition.mountpoint, dev_path=partition.device)
                                 ).update(
@@ -69,6 +71,14 @@ class Driver(models.Model):
                                     dev_path=partition.device,
                                     last_online_time=datetime.datetime.now(pytz.UTC),
                                 )
+                                if cls.objects.filter(uuid=puid).count() == 0:  # some don't exits in db
+                                    cls(
+                                        uuid=puid,
+                                        uri=partition.mountpoint,
+                                        dev_path=partition.device,
+                                        last_online_time=datetime.datetime.now(pytz.UTC),
+                                    ).save()
+                                    update_num += 1
                     except (json.JSONDecodeError, PermissionError, FileNotFoundError) as e:
                         import traceback
                         traceback.print_exc()
@@ -98,27 +108,72 @@ class Driver(models.Model):
 class Resource(models.Model):
     size = models.PositiveIntegerField(default=0)
     sha = models.CharField(max_length=150, null=True, blank=True)
+    md5 = models.CharField(max_length=32, null=True, blank=True)
     name = models.CharField(max_length=50, null=True, blank=True)
     mine_type = models.CharField(max_length=32, null=True, blank=True)
     ed2k_hash = models.CharField(max_length=32, null=True, blank=True)
+
+    class Meta:
+        unique_together = ["size", "sha"]
+
+    @classmethod
+    def create_or_get_from_abs_path(cls, path):
+        md5 = hashlib.md5()
+        sha1 = hashlib.sha1()
+        ed2k =hashlib.new('md4')
+        mine_type = None
+        size = 0
+        with open(path, "rb") as fp:
+            chuck = fp.read(9500*1024)
+            ed2k.update(hashlib.new('md4', chuck).digest())
+            sha1.update(chuck)
+            md5.update(chuck)
+            mine_type = magic.from_buffer(chuck)
+            size += len(chuck)
+            while len(chuck) == 9500*1024:
+                chuck = fp.read(9500*1024)
+                ed2k.update(hashlib.new('md4',chuck).digest())
+                sha1.update(chuck)
+                md5.update(chuck)
+                size += len(chuck)
+        res, is_create = cls.objects.get_or_create(
+            size=size,
+            sha=sha1,
+            md5=md5,
+            ed2k=ed2k,
+            mine_type=mine_type
+        )
+        return res
 
 
 class ResourceMap(models.Model):
     resource = models.ForeignKey(Resource, related_name="Map", null=True)
     path = models.CharField(max_length=1024)
-    driver = models.ForeignKey(Driver, related_name='Resources')
+    repo = models.ForeignKey(Repo, related_name='Resources')
     create_time = models.DateTimeField(null=True, blank=True, help_text="help check out danger file")
     modify_time = models.DateTimeField(null=True, blank=True, help_text="help check out danger file")
 
     @classmethod
+    def create_or_update_by_abs_path(cls, path, rope=None):
+        if rope_paths is None:
+            rope = list(Repo.objects.all())
+        for rope in sorted(rope, cmp=lambda x, y: cmp(len(x.uri), len(y.uri)), reverse=True):
+            if path.startswith(repo.uri):
+
+                ResourceMap.create_or_update(
+                    path=path[len(repo.uri):],
+                    repo=repo
+                )
+
+    @classmethod
     def find_by_abs_path(cls, path):
         res = []
-        for driver in Driver.objects.all():
-            mpath = driver.get_mount_path()
+        for repo in Repo.objects.all():
+            mpath = repo.get_mount_path()
             if mpath and path.startswith(mpath):
                 subpath = path[len(mpath)]
                 try:
-                    resmap = cls.objects.get(driver=driver, path=subpath)  # type: ResourceMap
+                    resmap = cls.objects.get(repo=repo, path=subpath)  # type: ResourceMap
                     res.append((len(mpath), resmap))
                 except:
                     pass
@@ -129,7 +184,7 @@ class ResourceMap(models.Model):
             return None
 
     def get_abs_path(self):
-        return os.path.join(self.driver.get_path(), self.path)
+        return os.path.join(self.repo.get_path(), self.path)
 
 
 class ResourceAuthor(models.Model):
@@ -145,5 +200,5 @@ class ExtendResource(models.Model):
 
 
 class ConfigWatchArea(models.Model):
-    driver = models.ForeignKey(Driver, related_name="WatchAreas")
+    repo = models.ForeignKey(Repo, related_name="WatchAreas")
     path = models.CharField(max_length=1024)

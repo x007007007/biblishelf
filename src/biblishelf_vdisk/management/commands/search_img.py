@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand, CommandError
-from biblishelf_main.models import ConfigWatchArea, Driver, ResourceMap, Resource
+from biblishelf_main.models import ConfigWatchArea, Repo, ResourceMap, Resource
 from biblishelf_vdisk.models import VDisk
 from pathinfo import mount
 import os
@@ -16,9 +16,9 @@ class Command(BaseCommand):
                 for file in [file for file in files if file.endswith(".pdf")]:
                     path = os.path.join(root, file)
                     vol, relpath = pi.get_path(path)
-                    driver, _ = Driver.objects.get_or_create(uuid=vol)
+                    repo, _ = Repo.objects.get_or_create(uuid=vol)
                     try:
-                        if ResourceMap.objects.filter(driver=driver, path=relpath).count() == 0:
+                        if ResourceMap.objects.filter(repo=repo, path=relpath).count() == 0:
                             sha1 = hashlib.sha1()
                             with open(path, 'rb') as fp:
                                 length = 0
@@ -29,7 +29,7 @@ class Command(BaseCommand):
                                     sha1.update(res)
                                 sha1.update(res)
                             resource, _ = Resource.objects.get_or_create(sha=sha1.hexdigest(), size=length)
-                            resmap, _ = ResourceMap.objects.get_or_create(resource=resource, driver=driver, path=relpath)
+                            resmap, _ = ResourceMap.objects.get_or_create(resource=resource, repo=repo, path=relpath)
                             print(path)
                         else:
                             print("exist", path)

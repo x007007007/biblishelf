@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand, CommandError
-from biblishelf_main.models import ConfigWatchArea, Driver, ResourceMap, Resource
+from biblishelf_main.models import ConfigWatchArea, Repo, ResourceMap, Resource
 import os
 import psutil
 import json
@@ -49,19 +49,19 @@ class Command(BaseCommand):
                 conf = self.load_or_create_disk_conf(conf_path)
             except RecursionError as e:
                 continue
-            driver, created = Driver.objects.get_or_create(uuid=conf["uuid"])
+            repo, created = Repo.objects.get_or_create(uuid=conf["uuid"])
             if created:
-                driver.uri = partition.mountpoint
+                repo.uri = partition.mountpoint
                 dirver.fs = partition.fstype
-                driver.save(update_fields=["uri"])
+                repo.save(update_fields=["uri"])
             else:
                 update_fields = ["last_online_time"]
-                if driver.uri != partition.mountpoint:
-                    driver.uri = partition.mountpoint
+                if repo.uri != partition.mountpoint:
+                    repo.uri = partition.mountpoint
                     update_fields.append("uri")
-                if driver.fs != partition.fstype:
-                    driver.fs = partition.fstype
+                if repo.fs != partition.fstype:
+                    repo.fs = partition.fstype
                     update_fields.append('fs')
                     warnings.warn("Unexpect fstype", RuntimeWarning)
-                driver.last_online_time = datetime.datetime.now(tz=pytz.UTC)
-                driver.save(update_fields=update_fields)
+                repo.last_online_time = datetime.datetime.now(tz=pytz.UTC)
+                repo.save(update_fields=update_fields)

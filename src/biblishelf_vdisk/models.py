@@ -1,5 +1,5 @@
 from django.db import models
-from biblishelf_main.models import Resource, Driver, ExtendResource
+from biblishelf_main.models import Resource, Repo, ExtendResource
 # Create your models here.
 
 
@@ -8,7 +8,7 @@ def _vdisk_cover_uploader(*args):
 
 
 class VDisk(ExtendResource):
-    driver = models.ForeignKey(Driver, null=True, blank=True)
+    repo = models.ForeignKey(Repo, null=True, blank=True)
     uuid = models.CharField("Volumn", max_length=128, null=True)
     type = models.CharField(
         max_length=32,

@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand, CommandError
-from biblishelf_main.models import ConfigWatchArea, Driver, ResourceMap, Resource
+from biblishelf_main.models import ConfigWatchArea, Repo, ResourceMap, Resource
 import os
 import psutil
 import json
@@ -31,10 +31,11 @@ class MountPointOnMacEventHandler(FileSystemEventHandler):
             return
         self.resource_map = ResourceMap.find_by_abs_path(event.src_path)
         print(event.src_path)
-        super(MountPointEventHandler, self).dispatch(event)
+        super(MountPointOnMacEventHandler, self).dispatch(event)
 
     def on_any_event(self, event):
         print(self.resource_map)
+
 
 class Command(BaseCommand):
     help = ''
@@ -74,20 +75,21 @@ class Command(BaseCommand):
             "Darwin": self.monitor_mac
         }[platform.system()]()
 
-    def monitor_mac(self):
+    @staticmethod
+    def monitor_mac():
         observer = Observer()
-        paths = [e.get_mount_path() for e in Driver.objects.all() if e.get_mount_path() is not None]
-        event_handler = MountPointEventHandler(paths)
+        paths = [e.get_mount_path() for e in Repo.objects.all() if e.get_mount_path() is not None]
+        event_handler = MountPointOnMacEventHandler(paths)
         for path in paths:
             observer.schedule(event_handler, path, recursive=True)
         observer.start()
         try:
             while True:
                 logger.debug("check storage mount")
-                if Driver.refresh_mount_db():
+                if Repo.refresh_mount_db():
                     if observer.is_alive():
                         observer.stop()
-                    paths = [e.get_mount_path() for e in Driver.objects.all() if e.get_mount_path() is not None]
+                    paths = [e.get_mount_path() for e in Repo.objects.all() if e.get_mount_path() is not None]
                     event_handler = MountPointOnMacEventHandler(paths)
                     for path in paths:
                         observer.schedule(event_handler, path, recursive=True)
@@ -96,3 +98,7 @@ class Command(BaseCommand):
         except KeyboardInterrupt:
             observer.stop()
         observer.join()
+
+
+
+
