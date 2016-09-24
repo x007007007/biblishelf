@@ -20,14 +20,21 @@ from watchdog.observers import Observer
 logger = logging.Logger(__name__)
 
 
-class MountPointEventHandler(FileSystemEventHandler):
+class MountPointOnMacEventHandler(FileSystemEventHandler):
+    resource_map = None
+
     def __init__(self, paths):
         self.mount_path = paths
 
     def dispatch(self, event):
+        if os.path.basename(event.src_path).startswith("._"):
+            return
+        self.resource_map = ResourceMap.find_by_abs_path(event.src_path)
         print(event.src_path)
         super(MountPointEventHandler, self).dispatch(event)
 
+    def on_any_event(self, event):
+        print(self.resource_map)
 
 class Command(BaseCommand):
     help = ''
@@ -81,7 +88,7 @@ class Command(BaseCommand):
                     if observer.is_alive():
                         observer.stop()
                     paths = [e.get_mount_path() for e in Driver.objects.all() if e.get_mount_path() is not None]
-                    event_handler = MountPointEventHandler(paths)
+                    event_handler = MountPointOnMacEventHandler(paths)
                     for path in paths:
                         observer.schedule(event_handler, path, recursive=True)
                     observer.start()

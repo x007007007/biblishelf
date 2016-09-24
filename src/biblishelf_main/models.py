@@ -11,13 +11,14 @@ logger = logging.Logger(__name__)
 
 class Driver(models.Model):
     META_PATH = ".biblishelf/disk.json"
+    MOUNT = "mount"
+    USER_SET = "set"
     name = models.CharField(max_length=128, blank=True, null=True)
     uuid = models.CharField("Volumn", max_length=128)
     type = models.CharField(
         choices=(
-            ("Disk", "disk"),
-            ("iso/img", "img"),
-            ("lfs", "lfs")
+            (MOUNT, MOUNT),
+            (USER_SET, USER_SET),
         ),
         max_length=32,
         null=True,
@@ -66,7 +67,7 @@ class Driver(models.Model):
                                 ).update(
                                     uri=partition.mountpoint,
                                     dev_path=partition.device,
-                                    last_online_time=datetime.datetime.now(pytz.UTC)
+                                    last_online_time=datetime.datetime.now(pytz.UTC),
                                 )
                     except (json.JSONDecodeError, PermissionError, FileNotFoundError) as e:
                         import traceback
@@ -94,7 +95,6 @@ class Driver(models.Model):
         return os.path.join(self.uri, self.META_PATH)
 
 
-
 class Resource(models.Model):
     size = models.PositiveIntegerField(default=0)
     sha = models.CharField(max_length=150, null=True, blank=True)
@@ -109,6 +109,24 @@ class ResourceMap(models.Model):
     driver = models.ForeignKey(Driver, related_name='Resources')
     create_time = models.DateTimeField(null=True, blank=True, help_text="help check out danger file")
     modify_time = models.DateTimeField(null=True, blank=True, help_text="help check out danger file")
+
+    @classmethod
+    def find_by_abs_path(cls, path):
+        res = []
+        for driver in Driver.objects.all():
+            mpath = driver.get_mount_path()
+            if mpath and path.startswith(mpath):
+                subpath = path[len(mpath)]
+                try:
+                    resmap = cls.objects.get(driver=driver, path=subpath)  # type: ResourceMap
+                    res.append((len(mpath), resmap))
+                except:
+                    pass
+        if len(res) > 0:
+            res.sort(key=lambda x: x[0], reverse=True)
+            return res[0][1]
+        else:
+            return None
 
     def get_abs_path(self):
         return os.path.join(self.driver.get_path(), self.path)
