@@ -63,5 +63,3 @@ class Book(ExtendResource):
 class BookPublishing(models.Model):
     name = models.CharField(max_length=64)
 
-
-
