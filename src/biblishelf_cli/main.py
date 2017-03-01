@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from cement.core import foundation
 from cement.utils.misc import init_defaults
 from . import command
