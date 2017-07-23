@@ -2,4 +2,8 @@ django
 watchdog
 Pillow
 psutil
+pathlib
 python-magic
+pytz
+tzlocal
+sqlalchemy

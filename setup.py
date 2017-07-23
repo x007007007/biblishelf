@@ -35,6 +35,7 @@ setup(
     entry_points={
         'console_scripts': [
             'biblishelf_cli = biblishelf_cli.main:main',
+            'bib = biblishelf_core.loader:command_entry',
         ]
     }
 )

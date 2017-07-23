@@ -5,7 +5,7 @@ import datetime
 import json
 from sqlalchemy import create_engine
 from tzlocal import get_localzone
-from biblishelf_core.repo.models import Base as DataBase
+from biblishelf_core.models import Base as DataBase
 
 
 class Generator(object):
