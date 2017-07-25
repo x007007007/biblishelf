@@ -24,7 +24,7 @@ class Repo(Base):
     id = Column(Integer, primary_key=True)
     uuid = Column(String(64))
     is_local = Column(Boolean)
-    paths = relationship("File", back_populates="repo")
+    paths = relationship("Path", back_populates="repo")
 
 
 class File(Base):
@@ -35,22 +35,22 @@ class File(Base):
     ed2k = Column(String(32))
     md5 = Column(String(32))
     sha1 = Column(String(150))
-    mine_type_id = Column(ForeignKey("mine_type.id"))
+    mime_type_id = Column(ForeignKey("mime_type.id"))
     resource_id = Column(ForeignKey("resource.id"))
 
     resource = relationship("Resource", back_populates="files")
-    mine_type = relationship("MineType", back_populates="files")
-    paths = relationship("File", back_populates="file")
+    mime_type = relationship("MimeType", back_populates="files")
+    paths = relationship("Path", back_populates="file")
 
 
 
-class MineType(Base):
-    __tablename__ = "mine_type"
+class MimeType(Base):
+    __tablename__ = "mime_type"
 
     id = Column(Integer, primary_key=True)
-    mine = Column(String(32))
-    full_mine = Column(String(512))
-    files = relationship("File", back_populates="mine_type")
+    mime = Column(String(32))
+    full_mime = Column(String(512))
+    files = relationship("File", back_populates="mime_type")
 
 
 class Path(Base):

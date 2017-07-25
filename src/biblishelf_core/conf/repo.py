@@ -41,13 +41,16 @@ class RepoConfig(object):
             self.Session = sessionmaker(bind=self.engine)
 
 
+current_repo = None
+
 def get_repo(path=None):
     path = os.path.abspath(path or '.')
     if isinstance(path, str):
         path = Path(path)
     while True:
         try:
-            return RepoConfig(path)
+            current_repo = RepoConfig(path)
+            return current_repo
         except NotExistRepoError:
             if len(path.parts) > 1:
                 path = path.parent

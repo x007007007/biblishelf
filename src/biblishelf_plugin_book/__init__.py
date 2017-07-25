@@ -6,3 +6,5 @@ def test():
     print("test_ register call back")
 
 register_callback("generate", test)
+
+from .hook import *

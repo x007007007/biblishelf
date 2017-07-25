@@ -10,7 +10,7 @@ class Init(BaseCommand):
 
 
     def handle(self, name, *args, **kwargs):
-        generater = Generator(name)
+        generater = Generator(name.name)
         generater.generate_repo()
 
 

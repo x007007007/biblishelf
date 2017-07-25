@@ -2,6 +2,9 @@ import six
 import collections
 import argparse
 
+class CommandError(Exception):
+    pass
+
 
 class BaseMetaCommand(type):
     commands = collections.OrderedDict()
