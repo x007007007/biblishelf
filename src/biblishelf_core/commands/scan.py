@@ -18,12 +18,20 @@ class Scan(BaseCommand):
         self.hook_list = ScanHooker.get_hooker()
         repo = get_repo()
         self.repo = repo
+        session = self.repo.Session()
         if repo is None:
             raise CommandError("don't have repo")
         for root, dirs, files in os.walk(os.curdir):
             for file_name in files:
                 file_path = os.path.join(os.path.abspath(root), file_name)
                 if (os.access(file_path, os.R_OK)):
+                    record = session.query(Path).filter_by(
+                        path=file_path
+                    ).first()
+                    disk_time = datetime.datetime.fromtimestamp(os.stat(file_path).st_mtime)
+                    print(record and record.modify_time, disk_time)
+                    if record and record.modify_time != disk_time:
+                        continue
                     try:
                         self.load_file(file_path=file_path)
                     except io.UnsupportedOperation:

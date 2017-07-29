@@ -11,6 +11,7 @@ import datetime
 class PdfScanHooker(ScanHooker):
     pdf_timestr_re = re.compile(r"D:(\d{14}[+\-]\d\d)'(\d\d)'")
 
+    ext_name = ["pdf"]
     @staticmethod
     def hooker_mime_type(mime_type, mime):
         if mime_type in ['application/pdf']:
@@ -48,10 +49,10 @@ class PdfScanHooker(ScanHooker):
             session.commit()
 
         except PyPDF2.utils.PyPdfError:
-            traceback.print_exc()
+            # traceback.print_exc()
             self._info = traceback.format_exc()
             session.rollback()
         except Exception as e:
-            traceback.print_exc()
+            # traceback.print_exc()
             self._info = traceback.format_exc()
             session.rollback()
