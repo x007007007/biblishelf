@@ -7,12 +7,14 @@ import hashlib
 from ..hook import ScanHooker
 import magic
 import uuid
+from ..shortcut import get_or_create
 import datetime
 
 
 class Scan(BaseCommand):
 
     def handle(self, *args, **kwargs):
+        self.hook_list = ScanHooker.get_hooker()
         repo = get_repo()
         self.repo = repo
         if repo is None:
@@ -29,13 +31,27 @@ class Scan(BaseCommand):
     @staticmethod
     def iter_file_chunk(file_path):
         chunk_size = 9500 * 1024
-        print(file_path)
         with open(file_path, "rb") as fp:
             chuck = fp.read(chunk_size)
             yield chuck
             while (len(chuck) == chunk_size):
                 chuck = fp.read(chunk_size)
                 yield chuck
+
+    def is_hook_by_mime_type(self, mime_type, mime):
+        for hookcls in self.hook_list:
+            assert issubclass(hookcls, ScanHooker)
+            if hookcls.hooker_mime_type(mime_type, mime):
+                return True
+        return False
+
+
+    def hook_deal(self, file_path, resource):
+        with open(file_path, 'rb') as fp:
+            for hookcls in self.hook_list:
+                fp.seek(0)
+                hookobj = hookcls(resource)
+                hookobj.get_fp(fp)
 
     def load_file(self, file_path):
         chunks = self.iter_file_chunk(file_path=file_path)
@@ -44,6 +60,7 @@ class Scan(BaseCommand):
         ed2k = hashlib.new('md4')
         mime_type = None
         size = 0
+        file_type = None
         for chunk in chunks:
             ed2k.update(hashlib.new('md4', chunk).digest())
             sha1.update(chunk)
@@ -52,54 +69,42 @@ class Scan(BaseCommand):
             if mime_type is None:
                 mime_type = magic.from_buffer(chunk, mime=True)
                 file_type = magic.from_buffer(chunk)
+                if not self.is_hook_by_mime_type(mime_type, file_type):
+                    return False
+
         session = self.repo.Session()
-        mime_type = session.query(MimeType).filter_by(
+
+        mimetype, _ = get_or_create(
+            session, MimeType,
             mime=mime_type,
             full_mime=file_type
-        ).first()
-        if not mime_type:
-            mime_type = MimeType(
-                mime=mime_type,
-                full_mime=file_type
-            )
-            session.add(mime_type)
-        resource = session.query(Resource).filter_by(
-            name=os.path.basename(file_path)
-        ).first()
-        if not resource:
-            resource = Resource(
-                uuid=uuid.uuid4().hex,
-                name=os.path.basename(file_path),
-                create_time=datetime.datetime.now()
-            )
-            session.add(resource)
+        )
+        resource, _ = get_or_create(
+            session, Resource,
+            default={
+                "uuid": uuid.uuid4().hex,
+                "create_time": datetime.datetime.now()
+            },
+            name=os.path.basename(file_path).strip()
+        )
 
-        resource_file = session.query(File).filter_by(
+        resource_file, _ = get_or_create(
+            session, File,
+            default={
+                "sha1": sha1.hexdigest(),
+                "resource": resource,
+                "mime_type": mimetype
+            },
             size=size,
             md5=md5.hexdigest(),
             ed2k=ed2k.hexdigest()
-        ).first()
-        if not resource_file:
-            resource_file = File(
-                size=size,
-                md5=md5.hexdigest(),
-                ed2k=ed2k.hexdigest(),
-                sha1=sha1.hexdigest(),
-                resource=resource,
-                mime_type=mime_type
-            )
-            session.add(resource_file)
+        )
 
-        resource_file_path = session.query(Path).filter_by(
+        resource_file_path, _ = get_or_create(
+            session, Path,
             path=file_path
-        ).first()
-        if not resource_file_path:
-            resource_file_path = Path(
-                path=file_path
-            )
-            session.add(resource_file_path)
+        )
 
-        session.commit()
-
+        self.hook_deal(file_path, resource)
 
 

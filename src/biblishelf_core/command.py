@@ -19,7 +19,6 @@ class BaseCommand(six.with_metaclass(BaseMetaCommand)):
     abstract = True
 
     def __init__(self, argv):
-        print(argv)
         parser = argparse.ArgumentParser(description='biblishelf command line tool')
         self.argv = argv
 

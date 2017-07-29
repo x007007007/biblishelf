@@ -38,10 +38,18 @@ class RepoConfig(object):
             raise RepoError("database not exist")
         else:
             self.engine = create_engine('sqlite:///{}'.format(self.db_path), echo=self.debug)
-            self.Session = sessionmaker(bind=self.engine)
+            self.Session = sessionmaker(bind=self.engine, autoflush=True)
 
 
-current_repo = None
+class ProxyRepoCinfig(object):
+    def __call__(self, rc):
+        self._rc = rc
+
+    def __getattr__(self, name):
+        return getattr(self._rc, name)
+
+current_repo = ProxyRepoCinfig()
+
 
 def get_repo(path=None):
     path = os.path.abspath(path or '.')
@@ -49,8 +57,9 @@ def get_repo(path=None):
         path = Path(path)
     while True:
         try:
-            current_repo = RepoConfig(path)
-            return current_repo
+            repo = RepoConfig(path)
+            current_repo(repo)
+            return repo
         except NotExistRepoError:
             if len(path.parts) > 1:
                 path = path.parent

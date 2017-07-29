@@ -13,8 +13,8 @@ class Resource(Base):
     id = Column(Integer, primary_key=True )
     uuid = Column(String(64))
     name = Column(String(128))
-    create_time = Column(DateTime())
-
+    create_time = Column(DateTime(), nullable=True)
+    modify_time = Column(DateTime(), nullable=True)
     files = relationship("File", back_populates="resource")
 
 
@@ -35,8 +35,8 @@ class File(Base):
     ed2k = Column(String(32))
     md5 = Column(String(32))
     sha1 = Column(String(150))
-    mime_type_id = Column(ForeignKey("mime_type.id"))
-    resource_id = Column(ForeignKey("resource.id"))
+    mime_type_id = Column("mime_type_id", Integer, ForeignKey("mime_type.id"))
+    resource_id = Column("resource_id", Integer, ForeignKey("resource.id"))
 
     resource = relationship("Resource", back_populates="files")
     mime_type = relationship("MimeType", back_populates="files")
@@ -58,9 +58,10 @@ class Path(Base):
 
     id = Column(Integer, primary_key=True)
     path = Column(Text)
-    modify_time = Column(DateTime)
-    create_time = Column(DateTime)
-    file_id = Column(ForeignKey("file.id"))
-    repo_id = Column(ForeignKey("repo.id"))
+    modify_time = Column(DateTime, nullable=True)
+    create_time = Column(DateTime, nullable=True)
+    access_time = Column(DateTime, nullable=True)
+    file_id = Column("file_id", Integer, ForeignKey("file.id"))
+    repo_id = Column("repo_id", Integer, ForeignKey("repo.id"))
     repo = relationship("Repo", back_populates="paths")
     file = relationship("File", back_populates="paths")

@@ -10,6 +10,8 @@ class Loader(object):
     def __init__(self):
         self.plugin = OrderedDict()
         self.models = OrderedDict()
+        self.repo = get_repo(".")
+
 
     def load_plugin_models(self):
         for module_loader, name, is_pkg in pkgutil.iter_modules():
@@ -23,10 +25,7 @@ class Loader(object):
         from biblishelf_core import commands
         for module_loader, name, is_pkg in pkgutil.iter_modules():
             if(name.startswith("biblishelf_plugin_")):
-                try:
-                    self.models[name[len("biblishelf_plugin_"):]] = importlib.import_module("{}".format(name))
-                except ImportError:
-                    pass
+                self.models[name[len("biblishelf_plugin_"):]] = importlib.import_module("{}".format(name))
                 try:
                     self.models[name[len("biblishelf_plugin_"):]] = importlib.import_module("{}.commands".format(name))
                 except ImportError:
