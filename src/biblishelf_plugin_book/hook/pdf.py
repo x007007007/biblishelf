@@ -1,7 +1,7 @@
 from biblishelf_core.hook import ScanHooker
 from biblishelf_core.shortcut import get_or_create, create_or_update
 from PyPDF2 import PdfFileReader
-from .models import Book, CatalogItem, BookAuthor, PdfBook, PdfBookProducer, PdfBookCreator
+from ..models import Book, CatalogItem, BookAuthor, PdfBook, PdfBookProducer, PdfBookCreator
 import PyPDF2.utils
 import re
 import traceback

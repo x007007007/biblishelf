@@ -16,22 +16,19 @@ def get_or_create(s, model, default=None, **kwargs):
             **c_kwargs
         )
         s.add(m)
-        s.commit()
         return m, True
 
 def create_or_update(s, model, default=None, **kwargs):
-    m = s.query(model).filter_by(
+    ms = s.query(model).filter_by(
         **kwargs
-    ).first()
-    if m:
-        s.query(model).filter_by(
-            **kwargs,
-        ).update(
-            **default
+    )
+    if ms.count()>0:
+        ms.update(
+            default,
+            synchronize_session='evaluate'
         )
-        return s.query(model).filter_by(
-            **kwargs
-        ).first(), True
+        s.commit()
+        return ms.first(), True
     else:
         c_kwargs = {}
         c_kwargs.update(**kwargs)
@@ -42,5 +39,4 @@ def create_or_update(s, model, default=None, **kwargs):
             **c_kwargs
         )
         s.add(m)
-        s.commit()
         return m, False

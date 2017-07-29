@@ -7,8 +7,9 @@ import hashlib
 from ..hook import ScanHooker
 import magic
 import uuid
-from ..shortcut import get_or_create
+from ..shortcut import create_or_update, get_or_create
 import datetime
+import time
 
 
 class Scan(BaseCommand):
@@ -99,10 +100,16 @@ class Scan(BaseCommand):
             md5=md5.hexdigest(),
             ed2k=ed2k.hexdigest()
         )
-
-        resource_file_path, _ = get_or_create(
+        stat = os.stat(file_path)
+        resource_file_path, _ = create_or_update(
             session, Path,
-            path=file_path
+            default={
+                "file_id": resource_file.id,
+                "modify_time": datetime.datetime.fromtimestamp(stat.st_mtime),
+                "create_time": datetime.datetime.fromtimestamp(stat.st_ctime),
+                "access_time": datetime.datetime.fromtimestamp(stat.st_atime),
+            },
+            path=file_path,
         )
 
         self.hook_deal(file_path, resource)
