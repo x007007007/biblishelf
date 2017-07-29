@@ -49,17 +49,17 @@ class Search(BaseCommand):
 
     def search(self, key):
         session = self.repo.Session()
-        resources = session.query(Path).join(
+        resources = session.query(Path, Resource, File).join(
             Path.file
         ).join(
             File.mime_type
         ).join(
             File.resource
         ).filter(
-            # or_(
-            #     Resource.name.like("%{}%".format(key)),
-            #     Path.path.like("%{}%".format(key))
-            # )
+            or_(
+                Resource.name.like("%{}%".format(key)),
+                Path.path.like("%{}%".format(key))
+            )
         )
         if (self.arg.type is not None):
             resources = resources.filter(
@@ -67,9 +67,11 @@ class Search(BaseCommand):
                     MimeType.mime.like("%{}%".format(self.arg.type)),
                     MimeType.full_mime.like("%{}%".format(self.arg.type))
                 )
+            ).group_by(
+                Resource.name,
             )
-        print(resources)
-        print(resources.all())
+        for path, res, finfo in resources.all():
+            print(res.name, path.path, finfo.md5)
         self.hook_deal(key)
 
 
