@@ -16,6 +16,7 @@ def get_or_create(s, model, default=None, **kwargs):
             **c_kwargs
         )
         s.add(m)
+        s.commit()
         return m, True
 
 def create_or_update(s, model, default=None, **kwargs):
@@ -39,4 +40,5 @@ def create_or_update(s, model, default=None, **kwargs):
             **c_kwargs
         )
         s.add(m)
+        s.commit()
         return m, False

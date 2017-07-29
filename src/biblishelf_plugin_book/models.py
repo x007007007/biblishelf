@@ -17,7 +17,7 @@ book_with_author = Table('book_with_author', Base.metadata,
 )
 
 
-class Book(Resource):
+class Book(Base):
     __tablename__ = "book"
     id = Column("id", Integer, primary_key=True, autoincrement=True)
     resource_id = Column("resource_id", Integer, ForeignKey("resource.id"))
@@ -45,7 +45,7 @@ class PdfBookCreator(Base):
     name = Column(String(254))
 
 
-class PdfBook(Book):
+class PdfBook(Base):
     __tablename__ = "book_pdf"
     id = Column(Integer, primary_key=True)
     book_id = Column(Integer, ForeignKey("book.id"))
