@@ -9,7 +9,6 @@ import magic
 import uuid
 from ..shortcut import create_or_update, get_or_create
 import datetime
-import time
 
 
 class Scan(BaseCommand):
@@ -23,13 +22,14 @@ class Scan(BaseCommand):
             raise CommandError("don't have repo")
         for root, dirs, files in os.walk(os.curdir):
             for file_name in files:
+                if file_name.startswith("."):
+                    continue
                 file_path = os.path.join(os.path.abspath(root), file_name)
                 if (os.access(file_path, os.R_OK)):
                     record = session.query(Path).filter_by(
                         path=file_path
                     ).first()
                     disk_time = datetime.datetime.fromtimestamp(os.stat(file_path).st_mtime)
-                    print(record and record.modify_time, disk_time)
                     if record and record.modify_time != disk_time:
                         continue
                     try:
@@ -47,10 +47,15 @@ class Scan(BaseCommand):
                 chuck = fp.read(chunk_size)
                 yield chuck
 
-    def is_hook_by_mime_type(self, mime_type, mime):
+    def is_hook_by_mime_type_and_name(self, mime_type, mime, name):
+        extension_names = name.lstrip(".").split(".")
+        if len(extension_names) > 1:
+            extension_name = extension_names[-1]
+        else:
+            extension_name = ""
         for hookcls in self.hook_list:
             assert issubclass(hookcls, ScanHooker)
-            if hookcls.hooker_mime_type(mime_type, mime):
+            if hookcls.hooker_base_info(mime_type, mime, extension_name):
                 return True
         return False
 
@@ -78,7 +83,11 @@ class Scan(BaseCommand):
             if mime_type is None:
                 mime_type = magic.from_buffer(chunk, mime=True)
                 file_type = magic.from_buffer(chunk)
-                if not self.is_hook_by_mime_type(mime_type, file_type):
+                if not self.is_hook_by_mime_type_and_name(
+                        mime_type,
+                        file_type,
+                        os.path.basename(file_path)
+                ):
                     return False
 
         session = self.repo.Session()

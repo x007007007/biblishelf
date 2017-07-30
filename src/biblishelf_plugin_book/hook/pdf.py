@@ -11,13 +11,16 @@ import datetime
 class PdfScanHooker(ScanHooker):
     pdf_timestr_re = re.compile(r"D:(\d{14}[+\-]\d\d)'(\d\d)'")
 
-    ext_name = ["pdf"]
+
     @staticmethod
-    def hooker_mime_type(mime_type, mime):
+    def hooker_base_info(mime_type, mime, extension_name):
+        if extension_name.lower in ['pdf']:
+            return True
         if mime_type in ['application/pdf']:
             return True
         else:
             return False
+
 
     def pdf_strptime(self, str):
         time_str_rr = self.pdf_timestr_re.match(str)

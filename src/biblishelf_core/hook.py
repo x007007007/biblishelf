@@ -49,8 +49,9 @@ class ScanHooker(BaseHooker):
         self.resource = resource
 
     @staticmethod
-    def hooker_mime_type(mime_type, mime):
+    def hooker_base_info(mime_type, mime, extension_name):
         raise NotImplementedError
+
 
     def get_fragment(self, fragment, size, number, total):
         raise NotImplementedError
