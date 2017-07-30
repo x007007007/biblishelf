@@ -16,6 +16,7 @@ class ZipScanHooker(ScanHooker):
         return False
 
     def get_fp(self, fp):
+        print(fp)
         with zipfile.ZipFile(fp) as zfp:
             print('namelist', zfp.namelist())
             print('infolist', zfp.infolist())

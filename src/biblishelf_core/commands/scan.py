@@ -60,12 +60,13 @@ class Scan(BaseCommand):
         return False
 
 
-    def hook_deal(self, file_path, resource):
+    def hook_deal(self, file_path, resource, mime_type, mime, name):
         with open(file_path, 'rb') as fp:
             for hookcls in self.hook_list:
-                fp.seek(0)
-                hookobj = hookcls(resource)
-                hookobj.get_fp(fp)
+                if hookcls.hooker_base_info(mime_type, mime, name):
+                    fp.seek(0)
+                    hookobj = hookcls(resource)
+                    hookobj.get_fp(fp)
 
     def load_file(self, file_path):
         chunks = self.iter_file_chunk(file_path=file_path)
@@ -129,6 +130,12 @@ class Scan(BaseCommand):
             path=file_path,
         )
 
-        self.hook_deal(file_path, resource)
+        self.hook_deal(
+            file_path,
+            resource,
+            mime_type,
+            file_type,
+            os.path.basename(file_path)
+        )
 
 
