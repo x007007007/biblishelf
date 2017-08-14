@@ -4,40 +4,12 @@ from ..conf.repo import get_repo
 from ..command import BaseCommand, CommandError
 from ..models import Resource, File, Path, MimeType
 from ..hook import ScanHooker
-
 import uuid
 from ..shortcut import create_or_update, get_or_create
 import datetime
-from ..file_info import ContCallBroken, FileInfo
+from ..file_info import StreamFile
+from ..actions.scan import ContCall
 
-
-class ContCall(object):
-    is_check = False
-    def __init__(self, filepath, hook_list):
-        self.hook_list = hook_list
-        self.file_name = os.path.basename(filepath)
-        extension_names = self.file_name.lstrip(".").split(".")
-        if len(extension_names) > 1:
-            extension_name = extension_names[-1]
-        else:
-            extension_name = ""
-        self.extension_name = extension_name
-
-    def __call__(self, chunk, res):
-        if self.is_check:
-            return True
-        else:
-            self.is_checked = True
-            mime = res.get("mime", {})
-            for hookcls in self.hook_list:
-                assert issubclass(hookcls, ScanHooker)
-                if hookcls.hooker_base_info(
-                    mime.get("type"),
-                    mime.get("full"),
-                    self.extension_name
-                ):
-                    return True
-            raise ContCallBroken
 
 class Scan(BaseCommand):
 
@@ -65,60 +37,62 @@ class Scan(BaseCommand):
                     except io.UnsupportedOperation:
                         pass
 
-    def hook_deal(self, file_path, resource, mime_type, mime, name):
-        with open(file_path, 'rb') as fp:
-            for hookcls in self.hook_list:
-                if hookcls.hooker_base_info(mime_type, mime, name):
-                    fp.seek(0)
-                    hookobj = hookcls(resource)
-                    hookobj.get_fp(fp)
+    def hook_deal(self, fp, file_path, resource, mime_type, mime, name):
+        for hookcls in self.hook_list:
+            if hookcls.hooker_base_info(mime_type, mime, name):
+                hookobj = hookcls(resource)
+                hookobj.get_fp(fp)
 
+
+    def generate_table(self, file_path, res, stream):
+        session = self.repo.Session()
+        mimetype, _ = get_or_create(
+            session, MimeType,
+            mime=res['mime']['type'],
+            full_mime=res['mime']['full']
+        )
+
+        resource, _ = get_or_create(
+            session, Resource,
+            default={
+                "uuid": uuid.uuid4().hex,
+                "create_time": datetime.datetime.now()
+            },
+            name=os.path.basename(file_path).strip()
+        )
+
+        resource_file, _ = get_or_create(
+            session, File,
+            default={
+                "sha1": res['sha1'].hexdigest(),
+                "resource": resource,
+                "mime_type": mimetype
+            },
+            size=res['size'],
+            md5=res['md5'].hexdigest(),
+            ed2k=res['ed2k'].hexdigest()
+        )
+        resource_file_path, _ = create_or_update(
+            session, Path,
+            default={
+                "file_id": resource_file.id,
+                "modify_time": stream.modify_time,
+                "create_time": stream.create_time,
+                "access_time": stream.access_time,
+            },
+            path=file_path,
+        )
+        session.commit()
+        return resource
 
     def load_file(self, file_path):
         with open(file_path, 'rb') as fp:
-            with FileInfo(fp, ContCall(file_path, self.hook_list)) as proc:
-                res = proc.info
-                session = self.repo.Session()
-                print(res)
-                mimetype, _ = get_or_create(
-                    session, MimeType,
-                    mime=res['mime']['type'],
-                    full_mime=res['mime']['full']
-                )
-
-                resource, _ = get_or_create(
-                    session, Resource,
-                    default={
-                        "uuid": uuid.uuid4().hex,
-                        "create_time": datetime.datetime.now()
-                    },
-                    name=os.path.basename(file_path).strip()
-                )
-
-                resource_file, _ = get_or_create(
-                    session, File,
-                    default={
-                        "sha1": res['sha1'].hexdigest(),
-                        "resource": resource,
-                        "mime_type": mimetype
-                    },
-                    size=res['size'],
-                    md5=res['md5'].hexdigest(),
-                    ed2k=res['ed2k'].hexdigest()
-                )
-                stat = os.stat(file_path)
-                resource_file_path, _ = create_or_update(
-                    session, Path,
-                    default={
-                        "file_id": resource_file.id,
-                        "modify_time": datetime.datetime.fromtimestamp(stat.st_mtime),
-                        "create_time": datetime.datetime.fromtimestamp(stat.st_ctime),
-                        "access_time": datetime.datetime.fromtimestamp(stat.st_atime),
-                    },
-                    path=file_path,
-                )
+            with StreamFile(fp, ContCall(file_path, self.hook_list)) as stream:
+                res = stream.info
+                resource = self.generate_table(file_path, res, stream)
 
                 self.hook_deal(
+                    stream.get_fp(),
                     file_path,
                     resource,
                     res['mime']['type'],

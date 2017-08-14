@@ -1,24 +1,45 @@
 import magic
 import hashlib
-
+import tempfile
 
 class ContCallBroken(Exception):
     pass
 
 
-class FileInfo(object):
+class BaseContCall(object):
 
-    def __init__(self, fp, contcall, seek=True):
+    @staticmethod
+    def get_extension_name(file_name):
+        extension_names = file_name.lstrip(".").split(".")
+        if len(extension_names) > 1:
+            extension_name = extension_names[-1]
+        else:
+            extension_name = ""
+        return extension_name
+
+class StreamFile(object):
+    _temp_file = None
+    def __init__(self, fp, IterBroker, seek=True):
         self.fp = fp
         self.contcall = contcall
-        if seek:
+        self.create_time = getattr(contcall, "create_time")
+        self.access_time = getattr(contcall, "access_time")
+        self.modify_time = getattr(contcall, "modify_time")
+        self._seek = seek
+        if self._seek:
             fp.seek(0)
 
     def __enter__(self):
+        if not self._seek:
+            self._temp_file = tempfile.TemporaryFile(mode="wb")
+            print("temporary file", self._temp_file)
         self._chunks = self._split_chunk()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        if not self._seek:
+            self._temp_file.detach()
+
         if exc_type is None:
             return True
         if issubclass(exc_type, ContCallBroken) or exc_type == ContCallBroken:
@@ -28,9 +49,15 @@ class FileInfo(object):
         chunk_size = 9500 * 1024
         chuck = self.fp.read(chunk_size)
         yield chuck
+        if not self._seek:
+            self._temp_file.write(chuck)
         while (len(chuck) == chunk_size):
             chuck = self.fp.read(chunk_size)
             yield chuck
+            if not self._seek:
+                self._temp_file.write(chuck)
+        if not self._seek:
+            self._temp_file.flush()
 
     def iter_chuck(self):
         md5 = True
@@ -66,6 +93,14 @@ class FileInfo(object):
                     "full": magic.from_buffer(chunk)
                 }
             self.contcall(chunk, res)
+
+    def get_fp(self):
+        if self._seek:
+            self.fp.seek(0)
+            return self.fp
+        else:
+            self._temp_file.seek()
+            return self._temp_file
 
     @property
     def info(self):

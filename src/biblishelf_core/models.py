@@ -24,6 +24,7 @@ class Repo(Base):
     id = Column(Integer, primary_key=True)
     uuid = Column(String(64))
     is_local = Column(Boolean)
+    is_archive = Column(Boolean)
     paths = relationship("Path", back_populates="repo")
 
 

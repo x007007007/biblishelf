@@ -9,6 +9,7 @@ class CommandError(Exception):
 class BaseMetaCommand(type):
     commands = collections.OrderedDict()
     def __new__(self, name, classes, attrs):
+        print(name)
         cmdclass = super(BaseMetaCommand, self).__new__(self, name, classes, attrs)
         if not attrs.get('abstract', False):
             self.commands[name] = cmdclass
