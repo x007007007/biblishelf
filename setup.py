@@ -1,16 +1,15 @@
 #!/usr/bin/env python
-import os
-import subprocess
-
 from setuptools import setup
 from setuptools import find_packages
-from setuptools.command.develop import develop as _develop
-from setuptools.command.install import install as _install
+import versioneer
+
+version = versioneer.get_version()
+cmdclass = versioneer.get_cmdclass()
 
 
 setup(
     name='biblishelf',
-    version = "0.1.0",
+    version = version,
     install_requires=[
         "cement",
     ],
@@ -37,5 +36,6 @@ setup(
             'biblishelf_cli = biblishelf_cli.main:main',
             'bib = biblishelf_core.loader:command_entry',
         ]
-    }
+    },
+    cmdclass=cmdclass
 )
