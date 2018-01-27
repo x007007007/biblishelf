@@ -1,7 +1,3 @@
--   repo: https://github.com/asottile/add-trailing-comma
-    sha: v0.6.4
-    hooks:
-    -   id: add-trailing-comma
 -   repo: git://github.com/pre-commit/mirrors-isort
     sha: v4.2.15  # Use the sha / tag you want to point at
     hooks:
