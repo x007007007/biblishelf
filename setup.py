@@ -1,8 +1,9 @@
 #!/usr/bin/env python
-import versioneer
+# pylint: disable=C0111,C0103
 from setuptools import setup
 from setuptools import find_packages
 
+import versioneer
 
 version = versioneer.get_version()
 cmdclass = versioneer.get_cmdclass()
@@ -16,10 +17,10 @@ setup(
     ],
     packages=find_packages('src'),
     package_dir={
-        "": "src"
+        "": "src",
     },
     package_data={
-        "": []
+        "": [],
     },
     description="a file ",
     author="xingci xu",
@@ -36,7 +37,7 @@ setup(
         'console_scripts': [
             'biblishelf_cli = biblishelf_cli.main:main',
             'bib = biblishelf_core.loader:command_entry',
-        ]
+        ],
     },
-    cmdclass=cmdclass
+    cmdclass=cmdclass,
 )

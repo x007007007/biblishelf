@@ -1,0 +1,22 @@
+-   repo: https://github.com/asottile/add-trailing-comma
+    sha: v0.6.4
+    hooks:
+    -   id: add-trailing-comma
+-   repo: git://github.com/pre-commit/mirrors-isort
+    sha: v4.2.15  # Use the sha / tag you want to point at
+    hooks:
+    -   id: isort
+-   repo: git://github.com/pre-commit/pre-commit-hooks
+    sha: v1.2.0  # Use the ref you want to point at
+    hooks:
+    -   id: check-ast
+    -   id: trailing-whitespace
+    -   id: flake8
+    -   id: requirements-txt-fixer
+    -   id: check-added-large-files
+    -   id: check-case-conflict
+    -   id: forbid-new-submodules
+-   repo: git://github.com/pre-commit/mirrors-pylint
+    sha: v1.8.2  # Use the sha / tag you want to point at
+    hooks:
+    -   id: pylint
