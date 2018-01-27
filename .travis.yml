@@ -1,0 +1,16 @@
+language: python
+python:
+  - "3.4"
+  - "3.5"
+  - "3.6"
+  # PyPy versions
+  - "3.6-dev"  # 3.6 development branch
+  - "3.7-dev"  # 3.7 development branch
+  - "nightly"
+  - "pypy3"  # Pypy3 5.8.0-beta0
+# command to install dependencies
+install:
+  - pip install -r requirements.txt
+  - pip install .
+# command to run tests
+script: pytest

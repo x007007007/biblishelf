@@ -9,6 +9,7 @@
 -   repo: git://github.com/pre-commit/pre-commit-hooks
     sha: v1.2.0  # Use the ref you want to point at
     hooks:
+    -   id: autopep8-wrapper
     -   id: check-ast
     -   id: trailing-whitespace
     -   id: flake8
