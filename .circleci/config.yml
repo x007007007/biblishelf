@@ -1,0 +1,18 @@
+machine:
+  post:
+    - pyenv global 3.6.3 3.5.3
+dependencies:
+  pre:
+    - pip install tox
+test:
+  pre:
+    - tox
+deployment:
+  production:
+    branch: master
+    commands:
+      - fab deploy
+  feature:
+    branch: /feature_.*/
+    commands:
+      - ./deploy_feature.sh
