@@ -9,6 +9,7 @@ pylint==1.8.1
 pytest
 python-magic
 pytz
+sphinx
 sqlalchemy
 tox
 tzlocal
