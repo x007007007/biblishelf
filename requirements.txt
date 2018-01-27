@@ -7,3 +7,8 @@ python-magic
 pytz
 tzlocal
 sqlalchemy
+tox
+isort
+astroid
+flake8
+versioneer

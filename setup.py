@@ -1,7 +1,8 @@
 #!/usr/bin/env python
+import versioneer
 from setuptools import setup
 from setuptools import find_packages
-import versioneer
+
 
 version = versioneer.get_version()
 cmdclass = versioneer.get_cmdclass()
@@ -9,7 +10,7 @@ cmdclass = versioneer.get_cmdclass()
 
 setup(
     name='biblishelf',
-    version = version,
+    version=version,
     install_requires=[
         "cement",
     ],
