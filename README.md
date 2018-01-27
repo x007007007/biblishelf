@@ -1,5 +1,7 @@
 # Biblishelf
 
+[![Build Status](https://travis-ci.org/x007007007/biblishelf.svg?branch=master)](https://travis-ci.org/x007007007/biblishelf)
+
 [![Documentation Status](https://readthedocs.org/projects/biblishelf/badge/?version=latest)](http://biblishelf.readthedocs.io/en/latest/?badge=latest)
 
 
