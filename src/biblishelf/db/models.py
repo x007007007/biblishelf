@@ -21,10 +21,22 @@ class Repo(Base):
     uuid = Column(String(length=128), unique=True)
 
 
+class VRepo(Base):
+    __tablename__ = "core_vrepo"
+    id = Column(Integer, primary_key=True)
+    normal_file_id = Column(Integer, ForeignKey('core_normal_file.id'), nullable=True)
+    normal_file = relationship("NormalFile")
+    large_file_id = Column(Integer, ForeignKey('core_large_file.id'), nullable=True)
+    large_file = relationship("LargeFile")
+
+
 class Location(Base):
     __tablename__ = "core_location"
     id = Column(Integer, primary_key=True)
     repo_id = Column(Integer, ForeignKey("core_repo.id"), nullable=True)
+    vrepo_id = Column(Integer, ForeignKey("core_vrepo.id"), nullable=True)
+    repo = relationship("Repo")
+    vrepo = relationship("VRepo")
     normal_file_id = Column(Integer, ForeignKey('core_normal_file.id'), nullable=True)
     normal_file = relationship("NormalFile")
     small_file_id = Column(Integer, ForeignKey('core_small_file.id'), nullable=True)
