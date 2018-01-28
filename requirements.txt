@@ -1,12 +1,16 @@
 astroid==1.6.0
+coverage
 flake8
 isort
 pathlib
 Pillow
+plantweb
 pre-commit
 psutil
 pylint==1.8.1
+pyrequirements
 pytest
+pytest-cov
 python-magic
 pytz
 sphinx
