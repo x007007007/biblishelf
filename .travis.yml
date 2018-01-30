@@ -13,11 +13,11 @@ python:
 install:
   - pip install -r requirements.txt
   - pip install codecov
-  - pip install .
 # command to run tests
 script:
-  - pytest --cov=src
-  - coverage report
+  - ./setup.py test
+  - coverage xml
+  - ls -a
 after_success:
   - codecov
 notifications:
