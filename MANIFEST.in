@@ -1,2 +1,9 @@
 include versioneer.py
-include src/biblishelf/_version.py
+include setup.py
+include setup.cfg
+include README.md
+include requirements.txt
+include requirements.ini
+recursive-include sphinx *py *rst
+recursive-include src *.py
+recursive-include tests *py

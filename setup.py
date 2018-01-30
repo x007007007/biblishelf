@@ -50,4 +50,10 @@ setup(
             'release': ('setup.py', version),
         },
     },
+    setup_requires=['pytest-runner'],
+    tests_require=[
+        'pytest',
+        'coverage',
+        'pytest-cov'
+    ],
 )

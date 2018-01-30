@@ -1,0 +1,45 @@
+# .coveragerc to control coverage.py
+[run]
+branch = True
+data_file = .coverage
+source=
+    src
+
+omit =
+    # omit anything in a .local directory anywhere
+    */.local/*
+
+
+# The entries in this section are lists of file paths that should be considered equivalent when combining data from different machines:
+[paths]
+source =
+    src/
+    /jenkins/build/*/src
+
+
+[report]
+# Regexes for lines to exclude from consideration
+exclude_lines =
+    # Have to re-enable the standard pragma
+    pragma: no cover
+
+    # Don't complain about missing debug-only code:
+    def __repr__
+    if self\.debug
+
+    # Don't complain if tests don't hit defensive assertion code:
+    raise AssertionError
+    raise NotImplementedError
+
+    # Don't complain if non-runnable code isn't run:
+    if 0:
+    if __name__ == .__main__.:
+
+ignore_errors = True
+
+[html]
+directory = dist/code_coverage_html
+
+
+[xml]
+output=coverage.xml

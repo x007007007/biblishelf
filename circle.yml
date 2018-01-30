@@ -9,13 +9,13 @@ dependencies:
 test:
   pre:
     - tox
-deployment:
-  production:
-    branch: master
-    commands:
-      - pip install Fabric3
-      - fab deploy
-  feature:
-    branch: /feature_.*/
-    commands:
-      - ./deploy_feature.sh
+#deployment:
+#  production:
+#    branch: master
+#    commands:
+#      - pip install Fabric3
+#      - fab deploy
+#  feature:
+#    branch: /feature_.*/
+#    commands:
+#      # - ./deploy_feature.sh
