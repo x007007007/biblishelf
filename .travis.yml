@@ -1,3 +1,4 @@
+sudo: false
 language: python
 python:
   - "3.4"
@@ -16,6 +17,7 @@ install:
 # command to run tests
 script:
   - pytest --cov=src
+  - coverage report
 after_success:
   - codecov
 notifications:
