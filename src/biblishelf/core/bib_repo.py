@@ -13,7 +13,8 @@ class NotCorrectBibRepo(Exception):
 
 
 class DamagedBibRepo(Exception):
-    pass
+    def __init__(self, *args):  # pylint: disable=super-init-not-called
+        self.args = args
 
 
 class BibRepo(object):
@@ -44,9 +45,10 @@ class BibRepo(object):
             try:
                 info = json.load(fp)
                 return self.get_repo_meta(info['uuid'])
-            except json.JSONDecodeError:
-                raise DamagedBibRepo("json decode error")
-        raise DamagedBibRepo("current no date")
+            except json.JSONDecodeError as e:
+                raise DamagedBibRepo(e)
+            except KeyError as e:
+                raise DamagedBibRepo(e)
 
     def get_remote_repo_info(self):
         """
@@ -64,7 +66,7 @@ class BibRepo(object):
                     res.append(info)
                 return res
             except json.JSONDecodeError:
-                raise DamagedBibRepo("json decode error")
+                raise DamagedBibRepo("Json Decode Error")
 
     def get_repo_meta(self, repo_uuid):
         """
@@ -75,12 +77,12 @@ class BibRepo(object):
         meta_path = self.bib_abs_path.joinpath("repo/{repo_uuid}/meta.json".format(repo_uuid=repo_uuid))
         db_path = self.bib_abs_path.joinpath("repo/{repo_uuid}/db.sqlite".format(repo_uuid=repo_uuid))
         if not (meta_path.exists() and meta_path.is_file()):
-            raise DamagedBibRepo("meta.data.lose", repo_uuid)
+            raise DamagedBibRepo("Meta Data Lose", repo_uuid)
         if not (db_path.exists() and db_path.is_file()):
-            raise DamagedBibRepo("Database lose", repo_uuid)
+            raise DamagedBibRepo("Database Lose", repo_uuid)
 
         with meta_path.open(encoding="utf-8") as fp:
             try:
                 return json.load(fp)
-            except json.JSONDecodeError:
-                raise DamagedBibRepo("json decode error, {}".format(meta_path))
+            except json.JSONDecodeError as e:
+                raise DamagedBibRepo("Meta Loader Error", meta_path, e)
