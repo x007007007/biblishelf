@@ -7,6 +7,8 @@ handle .bib index repository
 import json
 import pathlib
 
+from . import compatibility
+
 
 class NotCorrectBibRepo(Exception):
     pass
@@ -45,7 +47,7 @@ class BibRepo(object):
             try:
                 info = json.load(fp)
                 return self.get_repo_meta(info['uuid'])
-            except json.JSONDecodeError as e:
+            except compatibility.JSONDecodeError as e:
                 raise DamagedBibRepo(e)
             except KeyError as e:
                 raise DamagedBibRepo(e)
@@ -65,7 +67,7 @@ class BibRepo(object):
                     info['meta'] = (self.get_repo_meta(info["uuid"]))
                     res.append(info)
                 return res
-            except json.JSONDecodeError:
+            except compatibility.JSONDecodeError:
                 raise DamagedBibRepo("Json Decode Error")
 
     def get_repo_meta(self, repo_uuid):
@@ -84,5 +86,5 @@ class BibRepo(object):
         with meta_path.open(encoding="utf-8") as fp:
             try:
                 return json.load(fp)
-            except json.JSONDecodeError as e:
+            except compatibility.JSONDecodeError as e:
                 raise DamagedBibRepo("Meta Loader Error", meta_path, e)
