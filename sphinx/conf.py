@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# pylint: disable=C0103,C0111,redefined-builtin
+# pylint: disable=C0103,C0111,redefined-builtin,exec-used
 
 #
 # Biblishelf documentation build configuration file, created by
@@ -18,8 +18,9 @@
 import os
 import sys
 
-sys.path.insert(0, os.path.join(os.path.dirname(
-    os.path.dirname(os.path.abspath(__file__))), "src"))
+exec(open(os.path.join(os.path.dirname(__file__), "conf_cjk.py")).read(), globals(), locals())
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "src"))
 
 
 # -- General configuration ------------------------------------------------
