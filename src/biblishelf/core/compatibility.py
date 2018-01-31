@@ -8,6 +8,6 @@ import sys
 
 if sys.version_info.major == 3:
     if sys.version_info.minor == 4:
-        JSONDecodeError = TypeError
+        JSONDecodeError = ValueError
     else:
         from json import JSONDecodeError  # NOQA
