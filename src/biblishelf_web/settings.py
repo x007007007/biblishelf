@@ -38,7 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'biblishelf_main',
-    'biblishelf_book'
+    'biblishelf_book',
 ]
 
 MIDDLEWARE = [

@@ -1,21 +1,21 @@
 from django.db import models
 from biblishelf_main.models import ExtendResource
 from PyPDF2 import PdfFileReader
-import PyPDF2.utils
 import json
 # Create your models here.
 import re
+
 
 def _book_cover_uploader(*args):
     print(*args)
 
 
 class Book(ExtendResource):
-    publisher = models.ForeignKey("BookPublishing", null=True, blank=True)
+    publisher = models.ForeignKey("BookPublishing", null=True, blank=True, on_delete=models.CASCADE)
     page_number = models.PositiveIntegerField(default=0)
     isbn = models.CharField(max_length=64, null=True, blank=True)
     douban_id = models.CharField(max_length=64, null=True, blank=True)
-    set_book = models.ForeignKey('Book', related_name='sub_books', null=True, blank=True)
+    set_book = models.ForeignKey('Book', related_name='sub_books', null=True, blank=True, on_delete=models.CASCADE)
     set_type = models.CharField(
         choices=(
             ('series', 'series'),

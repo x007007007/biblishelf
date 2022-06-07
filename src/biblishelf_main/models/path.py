@@ -7,8 +7,8 @@ class Path(models.Model):
     file_modify_time = models.DateTimeField()
     file_create_time = models.DateTimeField()
     file_access_time = models.DateTimeField()
-    repo = models.ForeignKey("Repo")
-    resource = models.ForeignKey("Resource")
+    repo = models.ForeignKey("Repo", on_delete=models.CASCADE)
+    resource = models.ForeignKey("Resource", on_delete=models.CASCADE)
     path = models.TextField()
     
     class Meta:
