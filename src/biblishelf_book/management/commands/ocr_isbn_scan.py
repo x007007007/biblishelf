@@ -24,9 +24,14 @@ class Command(BaseCommand):
         self.repo = RepoModel.get_repo_form_path(repo_root_path)
         self.repo_root_path = RepoModel.get_repo_root_from_path(repo_root_path)
         for resource, file_path in self.repo.iter_resource_abspath(self.repo_root_path):
+            if BookModel.objects.filter(resource=resource).exclude(isbn__isnull=True).count() > 0:
+                continue
             isbn_list = []
-            for page_num, barcode in self.iter_barcode(file_path):
-                isbn_list.append(barcode.data.decode('utf-8'))
+            try:
+                for page_num, barcode in self.iter_barcode(file_path):
+                    isbn_list.append(barcode.data.decode('utf-8'))
+            except:
+                traceback.print_exc()
             url = None
             isbn_num = None
             print(isbn_list)

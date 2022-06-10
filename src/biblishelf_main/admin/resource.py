@@ -4,7 +4,19 @@ import re
 from django.contrib import admin
 from django.utils.safestring import mark_safe
 from biblishelf_main.models import ResourceModel
+from biblishelf_main.models import PathModel
 
+
+class PathInlineModel(admin.TabularInline):
+    model = PathModel
+    readonly_fields = (
+        'file_modify_time',
+        'file_create_time',
+        'file_access_time',
+        'repo',
+        'resource',
+        'path',
+    )
 
 @admin.register(ResourceModel)
 class ResourceModelAdmin(admin.ModelAdmin):
@@ -20,6 +32,7 @@ class ResourceModelAdmin(admin.ModelAdmin):
     list_display = ('md5', 'sha1', 'size')
     list_filter = ('mime_type',)
 
+    inlines = [PathInlineModel]
     # def show_all_resource_path(self, obj):
     #     rm_list = []
     #     for rm in obj.Map.all():
