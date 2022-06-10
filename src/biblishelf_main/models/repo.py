@@ -1,7 +1,7 @@
 from django.db import models
 
 
-class Repo(models.Model):
+class RepoModel(models.Model):
     uuid = models.UUIDField(unique=True, null=False)
     is_main = models.BooleanField(default=False)
     is_portable = models.BooleanField(default=True)

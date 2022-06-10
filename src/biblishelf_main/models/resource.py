@@ -9,12 +9,12 @@ import hashlib
 import magic
 
 
-class Resource(models.Model):
+class ResourceModel(models.Model):
     size = models.PositiveIntegerField(default=0)
     sha1 = models.CharField(max_length=224, null=True, blank=True)
     md5 = models.CharField(max_length=32, null=True, blank=True)
     ed2k_hash = models.CharField(max_length=32, null=True, blank=True)
-    mine_type = models.ForeignKey("MineType", null=True, blank=True, on_delete=models.CASCADE)
+    mine_type = models.ForeignKey("MineTypeModel", null=True, blank=True, on_delete=models.CASCADE)
 
     class Meta:
         unique_together = [("size", "sha1"), ("size", "md5"), ("size", "ed2k_hash")]

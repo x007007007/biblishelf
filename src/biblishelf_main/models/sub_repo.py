@@ -1,7 +1,7 @@
 from django.db import models
 
 
-class SubRepo(models.Model):
-    repo = models.ForeignKey("Repo", on_delete=models.CASCADE)
-    resource = models.ForeignKey("Resource", on_delete=models.CASCADE)
+class SubRepoModel(models.Model):
+    repo = models.ForeignKey("RepoModel", on_delete=models.CASCADE)
+    resource = models.ForeignKey("ResourceModel", on_delete=models.CASCADE)
     

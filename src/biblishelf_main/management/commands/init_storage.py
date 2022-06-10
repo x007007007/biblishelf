@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand, CommandError
-from biblishelf_main.models import ConfigWatchArea, Repo, ResourceMap, Resource
+from biblishelf_main.models import ConfigWatchArea, RepoModel, ResourceMap, ResourceModel
 import os
 import psutil
 import json
@@ -49,7 +49,7 @@ class Command(BaseCommand):
                 conf = self.load_or_create_disk_conf(conf_path)
             except RecursionError as e:
                 continue
-            repo, created = Repo.objects.get_or_create(uuid=conf["uuid"])
+            repo, created = RepoModel.objects.get_or_create(uuid=conf["uuid"])
             if created:
                 repo.uri = partition.mountpoint
                 dirver.fs = partition.fstype

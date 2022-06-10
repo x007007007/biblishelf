@@ -13,7 +13,7 @@ logger = logging.Logger(__name__)
 
 class ExtendResource(models.Model):
     name = models.CharField(max_length=64)
-    resource = models.ForeignKey("biblishelf_main.Resource", null=True, on_delete=models.CASCADE)
+    resource = models.ForeignKey("biblishelf_main.ResourceModel", null=True, on_delete=models.CASCADE)
 
     class Meta:
         abstract = True

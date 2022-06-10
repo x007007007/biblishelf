@@ -1,14 +1,14 @@
 from django.db import models
-from .repo import Repo
-from .resource import Resource
+from .repo import RepoModel
+from .resource import ResourceModel
 
 
-class Path(models.Model):
+class PathModel(models.Model):
     file_modify_time = models.DateTimeField()
     file_create_time = models.DateTimeField()
     file_access_time = models.DateTimeField()
-    repo = models.ForeignKey("Repo", on_delete=models.CASCADE)
-    resource = models.ForeignKey("Resource", on_delete=models.CASCADE)
+    repo = models.ForeignKey("RepoModel", on_delete=models.CASCADE)
+    resource = models.ForeignKey("ResourceModel", on_delete=models.CASCADE)
     path = models.TextField()
     
     class Meta:
