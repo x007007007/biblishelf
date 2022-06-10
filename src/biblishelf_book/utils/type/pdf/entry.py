@@ -2,7 +2,8 @@ from biblishelf_book.utils.type.base import BookBaseFileType as BaseFileType
 from biblishelf_main.models import ResourceModel
 from biblishelf_book.models import Book
 from PyPDF2 import PdfFileReader
-import PyPDF2.utils
+import PyPDF2.errors
+import re
 
 
 class PdfFileType(BaseFileType):
@@ -38,7 +39,7 @@ class PdfFileType(BaseFileType):
                     print(isbn_rr.groups())
             if self._page_number < 0:
                 self._page_number = None
-        except PyPDF2.utils.PyPdfError:
+        except PyPDF2.errors.PyPdfError:
             import traceback
             traceback.print_exc()
             self._info = traceback.format_exc()

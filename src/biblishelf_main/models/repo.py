@@ -66,3 +66,14 @@ class RepoModel(models.Model):
             path=file_path[len(root_path):].lstrip('/')
         )
         return resource, path
+
+    def iter_resource_abspath(self, base_root):
+        assert os.path.exists(os.path.join(base_root, '.bibrepo/meta.json'))
+        from .resource import ResourceModel
+        from .path import PathModel
+        for resource in ResourceModel.objects.filter(pathmodel__repo=self):
+            res = resource.pathmodel_set.order_by('-file_access_time').first()
+            assert isinstance(res, PathModel)
+            yield os.path.join(base_root, res.path)
+
+

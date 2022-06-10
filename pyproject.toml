@@ -1,0 +1,35 @@
+[project]
+name = "biblishelf"
+version = "0.1"
+description = ""
+authors = [
+    {name = "xxc", email = "x007007007@hotmail.com"},
+]
+dependencies = [
+    "django~=3.2",
+    "djangorestframework~=3.12",
+    "markdown~=3.3",
+    "django-filter~=21.1",
+    "Pygments~=2.10",
+    "django-debug-toolbar~=3.2",
+    "django-cors-headers~=3.10",
+    "django-admin-rangefilter~=0.8",
+    "django-admin-list-filter-dropdown~=1.0",
+    "django-extensions~=3.1",
+    "django-admin-charts~=0.24",
+    "gunicorn",
+    "gevent",
+    "pandas>=1.4.2",
+    "pyzbar>=0.1.9",
+    "python-magic>=0.4.27",
+    "pyyaml>=6.0",
+    "PyPDF2>=2.1.0",
+]
+requires-python = ">3.9"
+license = {text = "MIT"}
+
+[tool.pdm]
+
+[build-system]
+requires = ["pdm-pep517>=0.12.0"]
+build-backend = "pdm.pep517.api"

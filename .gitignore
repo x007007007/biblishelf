@@ -1,9 +1,12 @@
+.pdm.toml
+
 db.sqlite3
 .idea
 
 ### Python template
 
 # Byte-compiled / optimized / DLL files
+__pypackages__/
 __pycache__/
 *.py[cod]
 *$py.class
