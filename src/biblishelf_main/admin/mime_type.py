@@ -1,10 +1,10 @@
 from django.contrib import admin
-from biblishelf_main.models import MineTypeModel
+from biblishelf_main.models import MimeTypeModel
 
 
-@admin.register(MineTypeModel)
+@admin.register(MimeTypeModel)
 class MineTypeModelAdmin(admin.ModelAdmin):
     list_display = (
-        'mine',
+        'mime',
         'detail',
     )

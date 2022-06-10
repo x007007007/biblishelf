@@ -13,12 +13,12 @@ class ResourceModelAdmin(admin.ModelAdmin):
         'sha1',
         'md5',
         'ed2k_hash',
-        'mine_type',
+        'mime_type',
         # 'show_all_resource_path',
     )
-    search_fields = ('md5', 'sha1', 'mine_type')
+    search_fields = ('md5', 'sha1', 'mime_type')
     list_display = ('md5', 'sha1', 'size')
-    list_filter = ('mine_type',)
+    list_filter = ('mime_type',)
 
     # def show_all_resource_path(self, obj):
     #     rm_list = []

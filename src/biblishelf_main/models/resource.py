@@ -6,7 +6,6 @@ import logging
 import datetime
 import pytz
 import hashlib
-import magic
 
 
 class ResourceModel(models.Model):
@@ -14,18 +13,18 @@ class ResourceModel(models.Model):
     sha1 = models.CharField(max_length=224, null=True, blank=True)
     md5 = models.CharField(max_length=32, null=True, blank=True)
     ed2k_hash = models.CharField(max_length=32, null=True, blank=True)
-    mine_type = models.ForeignKey("MineTypeModel", null=True, blank=True, on_delete=models.CASCADE)
+    mime_type = models.ForeignKey("MimeTypeModel", null=True, blank=True, on_delete=models.CASCADE)
 
     class Meta:
         unique_together = [("size", "sha1"), ("size", "md5"), ("size", "ed2k_hash")]
 
     @classmethod
     def get_or_create_from_fp(cls, fp):
+        from .mime_type import MimeTypeModel
         assert fp.mode == "rb"
         md5 = hashlib.md5()
         sha1 = hashlib.sha1()
         ed2k =hashlib.new('md4')
-        mine_type = None
         size = 0
         fp.seek(0)
 
@@ -33,7 +32,9 @@ class ResourceModel(models.Model):
         ed2k.update(hashlib.new('md4', chuck).digest())
         sha1.update(chuck)
         md5.update(chuck)
-        mine_type = magic.from_buffer(chuck)
+
+        mime = MimeTypeModel.get_from_chuck(chuck)
+
         size += len(chuck)
         while len(chuck) == 9500*1024:
             chuck = fp.read(9500*1024)
@@ -43,10 +44,10 @@ class ResourceModel(models.Model):
             size += len(chuck)
         res, is_create = cls.objects.get_or_create(
             size=size,
-            sha=sha1.hexdigest(),
+            sha1=sha1.hexdigest(),
             md5=md5.hexdigest(),
             ed2k_hash=ed2k.hexdigest(),
-            mine_type=mine_type
+            mime_type=mime
         )
         return res, is_create
 

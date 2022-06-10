@@ -1,5 +1,5 @@
 from .hash_sha2 import HashShaModel
-from .mine_type import MineTypeModel
+from .mime_type import MimeTypeModel
 from .path import PathModel
 from .repo import RepoModel
 from .resource import ResourceModel

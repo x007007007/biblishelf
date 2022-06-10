@@ -29,7 +29,7 @@ class Book(ExtendResource):
     info = models.TextField("info", null=True, blank=True)
 
     def load_book_info(self, resmap):
-        if self.resource.mine_type.startswith("PDF"):
+        if self.resource.mime_type.startswith("PDF"):
             with open(resmap.get_abs_path(), "rb") as fp:
                 try:
                     pdf_obj = PdfFileReader(fp)

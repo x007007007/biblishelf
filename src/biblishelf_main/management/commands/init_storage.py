@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand, CommandError
-from biblishelf_main.models import ConfigWatchArea, RepoModel, ResourceMap, ResourceModel
+from biblishelf_main.models import RepoModel, ResourceModel
 import os
 import psutil
 import json

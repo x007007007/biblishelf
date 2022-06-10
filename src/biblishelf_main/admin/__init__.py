@@ -1,6 +1,6 @@
 from . import (
     hash_sha2,
-    mine_type,
+    mime_type,
     path,
     repo,
     resource,

@@ -2,7 +2,6 @@ from biblishelf_core.hook import ScanHooker
 from biblishelf_core.shortcut import get_or_create, create_or_update
 from PyPDF2 import PdfFileReader
 from ..models import Book, CatalogItem, BookAuthor, PdfBook, PdfBookProducer, PdfBookCreator
-import PyPDF2.utils
 import re
 import traceback
 import datetime
@@ -51,7 +50,7 @@ class PdfScanHooker(ScanHooker):
             book_pdf , is_update = create_or_update(session, PdfBook, default=default, book=book)
             session.commit()
 
-        except PyPDF2.utils.PyPdfError:
+        except PyPDF2.PyPdfError:
             # traceback.print_exc()
             self._info = traceback.format_exc()
             session.rollback()
