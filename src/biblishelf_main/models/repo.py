@@ -74,6 +74,6 @@ class RepoModel(models.Model):
         for resource in ResourceModel.objects.filter(pathmodel__repo=self):
             res = resource.pathmodel_set.order_by('-file_access_time').first()
             assert isinstance(res, PathModel)
-            yield os.path.join(base_root, res.path)
+            yield resource, os.path.join(base_root, res.path)
 
 

@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
 from biblishelf_main.models import RepoModel, ResourceModel
-from biblishelf_book.models import Book
+from biblishelf_book.models import BookModel
 import os
 import fnmatch
 
@@ -38,7 +38,7 @@ class Command(BaseCommand):
             root_path=self.repo_root_path,
             file_path=file_path
         )
-        Book.objects.get_or_create(
+        BookModel.objects.get_or_create(
             defaults=dict(
                 name=file,
             ),

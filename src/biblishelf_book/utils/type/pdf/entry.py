@@ -1,6 +1,6 @@
 from biblishelf_book.utils.type.base import BookBaseFileType as BaseFileType
 from biblishelf_main.models import ResourceModel
-from biblishelf_book.models import Book
+from biblishelf_book.models import BookModel
 from PyPDF2 import PdfFileReader
 import PyPDF2.errors
 import re
@@ -20,7 +20,7 @@ class PdfFileType(BaseFileType):
     def init(self, fp, resource):
         assert isinstance(resource, ResourceModel)
         book = resource.book_set.first()
-        assert isinstance(book, Book)
+        assert isinstance(book, BookModel)
         try:
             pdf_obj = PdfFileReader(fp)
             try:

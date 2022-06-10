@@ -1,12 +1,12 @@
 from django.contrib import admin
-from .models import Book, BookPublishing
+from .models import BookModel, BookPublishing
 from django.utils.safestring import mark_safe
 from django.shortcuts import resolve_url
 
 # Register your models here.
 
 
-@admin.register(Book)
+@admin.register(BookModel)
 class BookAdmin(admin.ModelAdmin):
     readonly_fields = ('resource_url',)
     list_display = ("pk", "name", "isbn", "page_number", "info")
