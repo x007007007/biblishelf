@@ -15,16 +15,8 @@ class BookModel(ExtendResource):
     page_number = models.PositiveIntegerField(default=0)
     isbn = models.CharField(max_length=64, null=True, blank=True)
     douban_id = models.CharField(max_length=64, null=True, blank=True)
-    set_book = models.ForeignKey('BookModel', related_name='sub_books', null=True, blank=True, on_delete=models.CASCADE)
-    set_type = models.CharField(
-        choices=(
-            ('series', 'series'),
-            ('same', 'same')
-        ),
-        max_length=8,
-        null=True,
-        blank=True
-    )
+    parent = models.ForeignKey('BookModel', related_name='children', null=True, blank=True, on_delete=models.CASCADE)
+
     cover = models.ImageField('cover', upload_to=_book_cover_uploader, null=True, blank=True)
     info = models.TextField("info", null=True, blank=True)
 
