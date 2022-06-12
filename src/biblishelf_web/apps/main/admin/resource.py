@@ -5,6 +5,7 @@ from django.contrib import admin
 from django.utils.safestring import mark_safe
 from biblishelf_web.apps.main.models import ResourceModel
 from biblishelf_web.apps.main.models import PathModel
+from ._admin import ModelAdmin
 
 
 class PathInlineModel(admin.TabularInline):
@@ -19,7 +20,7 @@ class PathInlineModel(admin.TabularInline):
     )
 
 @admin.register(ResourceModel)
-class ResourceModelAdmin(admin.ModelAdmin):
+class ResourceModelAdmin(ModelAdmin):
     readonly_fields = (
         'size',
         'sha1',

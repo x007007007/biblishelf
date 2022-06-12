@@ -23,13 +23,17 @@ class Command(BaseCommand):
         repo_root_path = os.path.abspath(path)
         self.repo = RepoModel.get_repo_form_path(repo_root_path)
         self.repo_root_path = RepoModel.get_repo_root_from_path(repo_root_path)
-        for resource, file_path in self.repo.iter_resource_abspath(self.repo_root_path):
-            if BookModel.objects.filter(resource=resource).exclude(isbn__isnull=True).count() > 0:
+        self.db = RepoModel.load_database_from_path(repo_root_path)
+
+        for resource, file_path in self.repo.iter_resource_abspath(self.db, self.repo_root_path):
+            if BookModel.objects.using(self.db).filter(resource=resource).exclude(isbn__isnull=True).count() > 0:
                 continue
             isbn_list = []
             try:
                 for page_num, barcode in self.iter_barcode(file_path):
                     isbn_list.append(barcode.data.decode('utf-8'))
+            except KeyboardInterrupt:
+                return
             except:
                 traceback.print_exc()
             url = None
@@ -46,7 +50,7 @@ class Command(BaseCommand):
                 self.set_isbn(resource, isbn_num, url)
 
     def set_isbn(self, resource, isbn_num, url):
-        BookModel.objects.update_or_create(
+        BookModel.objects.using(self.db).update_or_create(
             defaults=dict(
                 isbn=isbn_num,
                 page_number=self.page_number,

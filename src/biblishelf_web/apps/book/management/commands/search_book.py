@@ -18,9 +18,8 @@ class Command(BaseCommand):
         ignore_rule = options['ignore_rule']
         self.repo = RepoModel.get_repo_form_path(path)
         self.repo_root_path = RepoModel.get_repo_root_from_path(path)
+        self.db = RepoModel.load_database_from_path(path)
 
-        print(self.repo)
-        print(self.repo_root_path)
         assert isinstance(self.repo, RepoModel)
 
         for root, dirs, files in os.walk(path):
@@ -35,10 +34,11 @@ class Command(BaseCommand):
     def add_book(self, root, file):
         file_path = os.path.join(root, file)
         resource, path = self.repo.add_file(
+            db=self.db,
             root_path=self.repo_root_path,
             file_path=file_path
         )
-        BookModel.objects.get_or_create(
+        BookModel.objects.using(self.db).get_or_create(
             defaults=dict(
                 name=file,
             ),
