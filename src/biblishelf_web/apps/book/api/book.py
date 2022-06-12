@@ -14,6 +14,7 @@ class BookModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = BookModel
         fields = (
+            'pk',
             'resource',
             'cover',
             'name',
@@ -39,3 +40,11 @@ class BookListApiView(generics.ListCreateAPIView):
                 'repo',
             ).all())
         )
+
+
+class BookRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = BookModelSerializer
+
+    def get_queryset(self):
+        db = self.kwargs.get('db', 'default')
+        return BookModel.objects.using(db).all()

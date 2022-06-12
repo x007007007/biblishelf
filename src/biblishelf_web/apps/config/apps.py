@@ -15,5 +15,6 @@ class BiblishelfConfigConfig(AppConfig):
         for config in RepoConfigModel.objects.all():
             try:
                 connections.databases[config.get_database_config_key()] = config.get_database_config()
+                print(f"config db: {config.get_database_config_key()}")
             except:
                 traceback.print_exc()
