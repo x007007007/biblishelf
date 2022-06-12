@@ -7,7 +7,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('book', '0001_initial'),
+        ('biblishelf_book', '0001_initial'),
         ('biblishelf_main', '0001_initial'),
     ]
 

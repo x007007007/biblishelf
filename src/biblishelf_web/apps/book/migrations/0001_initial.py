@@ -32,9 +32,9 @@ class Migration(migrations.Migration):
                 ('set_type', models.CharField(blank=True, choices=[('series', 'series'), ('same', 'same')], max_length=8, null=True)),
                 ('cover', models.ImageField(blank=True, null=True, upload_to=biblishelf_web.apps.book.models._book_cover_uploader, verbose_name='cover')),
                 ('info', models.TextField(blank=True, null=True, verbose_name='info')),
-                ('publisher', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='book.bookpublishing')),
+                ('publisher', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='biblishelf_book.bookpublishing')),
                 ('resource', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='biblishelf_main.resource')),
-                ('set_book', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='sub_books', to='book.book')),
+                ('set_book', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='sub_books', to='biblishelf_book.book')),
             ],
             options={
                 'abstract': False,

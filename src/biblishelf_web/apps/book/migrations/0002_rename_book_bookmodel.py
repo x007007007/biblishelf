@@ -7,7 +7,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('biblishelf_main', '0006_rename_mine_type_resourcemodel_mime_type'),
-        ('book', '0001_initial'),
+        ('biblishelf_book', '0001_initial'),
     ]
 
     operations = [
