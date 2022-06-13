@@ -20,12 +20,15 @@ class Command(BaseCommand):
     help = ''
 
     def add_arguments(self, parser):
-        parser.add_argument('db', type=str)
-        parser.add_argument('--headless', action='store_true')
+        parser.add_argument('repo_root_path', nargs="?", type=str, default='.')
+        parser.add_argument('--db', type=str)
+        parser.add_argument('--no-headless', action='store_false')
 
-    def handle(self, db, headless, *args, **options):
+    def handle(self, repo_root_path=None, db=None, no_headless=False, *args, **options):
+        if db is None:
+            db = RepoModel.load_database_from_path(repo_root_path)
 
-        with self.open(headless) as browser:
+        with self.open(no_headless) as browser:
             for book in BookModel.objects.using(db).filter(
                 douban_id__isnull=True
             ).exclude(isbn__isnull=True):
@@ -47,9 +50,9 @@ class Command(BaseCommand):
                 time.sleep(random.randint(1, 5) * random.randint(1, 5) + random.randint(0, 9))
 
     @contextlib.contextmanager
-    def open(self, headless):
+    def open(self, no_headless):
         options = Options()
-        options.headless = headless
+        options.headless = not no_headless
         self.browser = webdriver.Firefox(
             options=options,
             executable_path=".\dev\geckodriver.exe"
