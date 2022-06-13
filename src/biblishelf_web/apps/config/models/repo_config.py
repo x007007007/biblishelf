@@ -28,6 +28,10 @@ class RepoConfigModel(models.Model):
             repo = RepoModel.objects.using(meta['uuid']).get(uuid=meta['uuid'])
             return repo
 
+    def get_database_config_key(self):
+        if self.repo_meta:
+            return self.repo_meta['uuid']
+
     def get_database_config(self) -> dict:
         return {
             'ENGINE': 'django.db.backends.sqlite3',
@@ -42,12 +46,10 @@ class RepoConfigModel(models.Model):
 
     def update_database_map(self):
         if k := self.get_database_config_key():
-            connections.databases[k] = self.get_database_config()
-            return k
-
-    def get_database_config_key(self):
-        if self.repo_meta:
-            return self.repo_meta['uuid']
+            if k not in connections.databases:
+                connections.databases[k] = self.get_database_config()
+            connections.databases[f"{k}-{self.id}"] = self.get_database_config()
+            return f"{k}-{self.id}"
 
     def get_repo_meta(self):
         return self.repo_meta

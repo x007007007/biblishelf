@@ -11,6 +11,7 @@ class RepoConfigModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = RepoConfigModel
         fields = (
+            'pk',
             'path',
             'repo',
             'repo_meta',
