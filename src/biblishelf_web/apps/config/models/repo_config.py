@@ -9,6 +9,7 @@ from biblishelf_web.apps.main.models import RepoModel
 logger = logging.Logger(__name__)
 # Create your models here.
 
+
 class RepoConfigModel(models.Model):
     path = models.CharField(max_length=254)
 
@@ -39,13 +40,14 @@ class RepoConfigModel(models.Model):
     def is_repo_exist(self):
         return os.path.exists(self.path, ".bibrepo")
 
-
-
     def update_database_map(self):
-        connections.databases[self.get_database_config_key()] = self.get_database_config()
+        if k := self.get_database_config_key():
+            connections.databases[k] = self.get_database_config()
+            return k
 
     def get_database_config_key(self):
-        return self.repo_meta['uuid']
+        if self.repo_meta:
+            return self.repo_meta['uuid']
 
     def get_repo_meta(self):
         return self.repo_meta
