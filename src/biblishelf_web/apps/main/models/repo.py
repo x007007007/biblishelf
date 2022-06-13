@@ -118,7 +118,7 @@ class RepoModel(models.Model):
             ),
             repo=self,
             resource=resource,
-            path=file_path[len(root_path):].lstrip('/')
+            path=file_path[len(root_path):].lstrip(os.path.sep)
         )
         return resource, path
 
@@ -130,5 +130,7 @@ class RepoModel(models.Model):
             if res := resource.pathmodel_set.using(db).order_by('-file_access_time').first():
                 assert isinstance(res, PathModel), type(res)
                 yield resource, os.path.join(base_root, res.path)
+            else:
+                print(f'{resource} no path')
 
 

@@ -28,6 +28,6 @@ class Command(BaseCommand):
 
         for resource, file_path in self.repo.iter_resource_abspath(self.db, self.repo_root_path):
             for path in resource.pathmodel_set.using(self.db).all():
-                file_path = os.path.join(self.repo_root_path.strip("\\"), path.path.strip("\\"))
+                file_path = os.path.join(self.repo_root_path, path.path)
                 if not os.path.exists(file_path):
                     path.delete(using=self.db)

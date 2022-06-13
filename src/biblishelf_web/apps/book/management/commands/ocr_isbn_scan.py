@@ -1,8 +1,7 @@
 from django.core.management.base import BaseCommand, CommandError
 from biblishelf_web.apps.main.models import RepoModel, ResourceModel
 from biblishelf_web.apps.book.models import BookModel
-import PyPDF2
-import traceback
+from django.db.models import Q
 import os
 from pdf2image import convert_from_path
 import PyPDF2
@@ -27,7 +26,11 @@ class Command(BaseCommand):
         self.repo_root_path = RepoModel.get_repo_root_from_path(repo_root_path)
 
         for resource, file_path in self.repo.iter_resource_abspath(self.db, self.repo_root_path):
-            if BookModel.objects.using(self.db).filter(resource=resource).exclude(isbn__isnull=True).count() > 0:
+            print(resource, file_path)
+            if BookModel.objects.using(self.db).filter(
+                    resource=resource
+            ).exclude(Q(isbn__isnull=True) | Q(isbn__exact='')).count() > 0:
+                print('skip')
                 continue
             isbn_list = []
             try:
