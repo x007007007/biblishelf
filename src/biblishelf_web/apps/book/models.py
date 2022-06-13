@@ -1,4 +1,5 @@
 from django.db import models
+from biblishelf_web.apps.main.fields import PortableImageField
 from biblishelf_web.apps.main.models import ExtendResource
 from PyPDF2 import PdfFileReader
 import json
@@ -6,8 +7,8 @@ import json
 import re
 
 
-def _book_cover_uploader(*args):
-    print(*args)
+def _book_cover_uploader(obj, filename):
+    return f"cover/{filename}"
 
 
 class BookModel(ExtendResource):
@@ -17,7 +18,12 @@ class BookModel(ExtendResource):
     douban_id = models.CharField(max_length=64, null=True, blank=True)
     parent = models.ForeignKey('BookModel', related_name='children', null=True, blank=True, on_delete=models.CASCADE)
 
-    cover = models.ImageField('cover', upload_to=_book_cover_uploader, null=True, blank=True)
+    cover = PortableImageField(
+        'cover',
+        upload_to=_book_cover_uploader,
+        null=True,
+        blank=True,
+    )
     info = models.TextField("info", null=True, blank=True)
 
     def load_book_info(self, resmap):

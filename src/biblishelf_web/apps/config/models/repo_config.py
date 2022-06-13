@@ -13,6 +13,13 @@ logger = logging.Logger(__name__)
 class RepoConfigModel(models.Model):
     path = models.CharField(max_length=254)
 
+    @classmethod
+    def get_repo_path_map(cls) -> dict[str, 'RepoConfigModel']:
+        m = {}
+        for i in cls.objects.all():
+            m[i.get_database_config_key()] = i
+        return m
+
     @cached_property
     def repo_meta(self):
         path = os.path.join(self.path, ".bibrepo\meta.json")
