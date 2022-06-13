@@ -38,7 +38,7 @@ class BookListApiView(generics.ListCreateAPIView):
                 db
             ).select_related(
                 'repo',
-            ).all())
+            ).filter(is_exist=True))
         )
 
 

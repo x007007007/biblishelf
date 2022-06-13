@@ -10,6 +10,7 @@ class PathModel(models.Model):
     repo = models.ForeignKey("RepoModel", on_delete=models.CASCADE)
     resource = models.ForeignKey("ResourceModel", on_delete=models.CASCADE)
     path = models.TextField()
+    is_exist = models.BooleanField(default=True)
     
     class Meta:
         unique_together = (
