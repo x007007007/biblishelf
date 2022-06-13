@@ -1,5 +1,5 @@
 import json
-from django.db import models, connections, router
+from django.db import models, connections, router, OperationalError
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 import logging
@@ -25,12 +25,18 @@ class RepoConfigModel(models.Model):
     def repo(self):
         self.update_database_map()
         if meta := self.get_repo_meta():
-            repo = RepoModel.objects.using(meta['uuid']).get(uuid=meta['uuid'])
+            try:
+                repo = RepoModel.objects.using(meta['uuid']).get(uuid=meta['uuid'])
+            except OperationalError as e:
+                del self.repo_meta
+                return
             return repo
+        del self.repo_meta
 
     def get_database_config_key(self):
         if self.repo_meta:
-            return self.repo_meta['uuid']
+            k = f"{self.repo_meta['uuid']}-{self.id}"
+            return k
 
     def get_database_config(self) -> dict:
         return {
@@ -46,10 +52,8 @@ class RepoConfigModel(models.Model):
 
     def update_database_map(self):
         if k := self.get_database_config_key():
-            if k not in connections.databases:
-                connections.databases[k] = self.get_database_config()
-            connections.databases[f"{k}-{self.id}"] = self.get_database_config()
-            return f"{k}-{self.id}"
+            connections.databases[k] = self.get_database_config()
+            return k
 
     def get_repo_meta(self):
         return self.repo_meta

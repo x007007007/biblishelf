@@ -1,12 +1,11 @@
 from rest_framework import generics
 from rest_framework import serializers
 from biblishelf_web.apps.config.models import RepoConfigModel
-from biblishelf_web.apps.main.serializer import RepoModelSerializer
 from django.db.models import Prefetch
 
 
 class RepoConfigModelSerializer(serializers.ModelSerializer):
-    repo = RepoModelSerializer(read_only=True)
+    repo = serializers.SerializerMethodField('get_database_config_key', read_only=True)
 
     class Meta:
         model = RepoConfigModel
@@ -16,6 +15,9 @@ class RepoConfigModelSerializer(serializers.ModelSerializer):
             'repo',
             'repo_meta',
         )
+
+    def get_database_config_key(self, obj):
+        return obj.get_database_config_key()
 
 
 class RepoListApiView(generics.ListCreateAPIView):
