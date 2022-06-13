@@ -3,6 +3,7 @@ import json
 from rest_framework import generics
 from rest_framework import serializers
 from rest_framework import filters
+from django.db.models import Count
 import django.forms
 from biblishelf_web.apps.main.serializer import ResourceModelSerializer
 
@@ -54,6 +55,29 @@ class BooleanEmptyCharFilter(django_filters.Filter):
         return qs
 
 
+class ExistSubSetFilter(django_filters.Filter):
+    field_class = django.forms.NullBooleanField
+
+    def filter(self, qs, value):
+        from django.db.models import Q
+        if value in django_filters.constants.EMPTY_VALUES:
+            return qs
+        res = PathModel.objects.values(
+            'resource_id'
+        ).annotate(
+            total_count=Count('path')
+        ).filter(
+            total_count__gt=0
+        ).values(
+            'resource_id'
+        )
+        if value:
+            qs = qs.filter(resource__in=res)
+        else:
+            qs = qs.exclude(resource__in=res)
+        return qs
+
+
 class BookFilter(django_filters.FilterSet):
     exist_isbn = BooleanEmptyCharFilter(
         label='exist isbn',
@@ -71,6 +95,10 @@ class BookFilter(django_filters.FilterSet):
         field_name='cover',
         exclude=True
     )
+    exist_path = ExistSubSetFilter(
+        label='exist path',
+        field_name="resource__pathmodel_set"
+    )
 
     class Meta:
         model = BookModel
@@ -81,6 +109,7 @@ class BookFilter(django_filters.FilterSet):
             'exist_isbn',
             'exist_douban_id',
         )
+
 
 class BookListApiView(generics.ListCreateAPIView):
     serializer_class = BookModelSerializer
