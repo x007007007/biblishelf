@@ -1,6 +1,7 @@
 import contextlib
 import json
 import time
+import random
 import traceback
 
 from django.core.management.base import BaseCommand, CommandError
@@ -43,6 +44,7 @@ class Command(BaseCommand):
                     book.name = res.get("title", book.name)
                     book.info = json.dumps(res)
                     book.save(update_fields=('douban_id', 'name', 'info'), using=db)
+                time.sleep(random.randint(1, 5) * random.randint(1, 5) + random.randint(0, 9))
 
     @contextlib.contextmanager
     def open(self, headless):
@@ -74,6 +76,7 @@ class Command(BaseCommand):
             by=By.XPATH,
             value="/html/body/div[@id='wrapper']/div[@id='root']/div/div/div/div/div/div[@class='item-root']/a[@class='cover-link']"
         )
+        time.sleep(4)
         for elem in elems:
             elem.click()
             break
