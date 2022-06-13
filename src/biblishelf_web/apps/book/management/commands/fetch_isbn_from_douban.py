@@ -60,7 +60,7 @@ class Command(BaseCommand):
 
     def search_isbn(self, browser: webdriver.Firefox, isbn):
         browser.get("https://book.douban.com/")
-        assert "豆瓣读书" in browser.title
+        # assert "豆瓣读书" in browser.title
         elem = browser.find_element(By.NAME, "search_text")
         elem.clear()
         elem.send_keys(isbn)

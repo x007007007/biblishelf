@@ -1,15 +1,31 @@
 import json
-
 from django.db import models, connections, router
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 import logging
 import os
+from django.utils.functional import cached_property
+from biblishelf_web.apps.main.models import RepoModel
 logger = logging.Logger(__name__)
 # Create your models here.
 
 class RepoConfigModel(models.Model):
     path = models.CharField(max_length=254)
+
+    @cached_property
+    def repo_meta(self):
+        path = os.path.join(self.path, ".bibrepo\meta.json")
+        if os.path.exists(path):
+            with open(path) as fp:
+                if meta := json.load(fp):
+                    return meta
+
+    @property
+    def repo(self):
+        self.update_database_map()
+        if meta := self.get_repo_meta():
+            repo = RepoModel.objects.using(meta['uuid']).get(uuid=meta['uuid'])
+            return repo
 
     def get_database_config(self) -> dict:
         return {
@@ -23,15 +39,16 @@ class RepoConfigModel(models.Model):
     def is_repo_exist(self):
         return os.path.exists(self.path, ".bibrepo")
 
-    def get_repo_meta(self):
-        path = os.path.join(self.path, ".bibrepo\meta.json")
-        if os.path.exists(path):
-            with open(path) as fp:
-                return json.load(fp)
+
+
+    def update_database_map(self):
+        connections.databases[self.get_database_config_key()] = self.get_database_config()
 
     def get_database_config_key(self):
-        meta = self.get_repo_meta()
-        return meta['uuid']
+        return self.repo_meta['uuid']
+
+    def get_repo_meta(self):
+        return self.repo_meta
 
     def migrate(self):
         from django.apps import apps
@@ -77,5 +94,4 @@ class RepoConfigModel(models.Model):
 
 @receiver(post_save, sender=RepoConfigModel)
 def on_repo_config_save(sender, instance: RepoConfigModel, **kwargs):
-    connections.databases[instance.get_database_config_key()] = instance.get_database_config()
-
+    instance.update_database_map()
