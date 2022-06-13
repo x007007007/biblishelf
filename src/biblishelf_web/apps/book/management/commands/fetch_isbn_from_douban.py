@@ -11,6 +11,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.firefox.options import Options
 import re
 
 
@@ -19,14 +20,19 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument('db', type=str)
+        parser.add_argument('--headless', action='store_true')
 
-    def handle(self, db, *args, **options):
-        with self.open() as browser:
+    def handle(self, db, headless, *args, **options):
+
+        with self.open(headless) as browser:
             for book in BookModel.objects.using(db).filter(
                 douban_id__isnull=True
             ).exclude(isbn__isnull=True):
                 try:
                     res = self.search_isbn(browser, book.isbn)
+                except KeyboardInterrupt:
+                    print("user interrupt")
+                    break
                 except:
                     traceback.print_exc()
                     continue
@@ -39,8 +45,13 @@ class Command(BaseCommand):
                     book.save(update_fields=('douban_id', 'name', 'info'), using=db)
 
     @contextlib.contextmanager
-    def open(self):
-        self.browser = webdriver.Firefox(executable_path=".\dev\geckodriver.exe")
+    def open(self, headless):
+        options = Options()
+        options.headless = headless
+        self.browser = webdriver.Firefox(
+            options=options,
+            executable_path=".\dev\geckodriver.exe"
+        )
         try:
             yield self.browser
         except:
