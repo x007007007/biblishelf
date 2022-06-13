@@ -3,7 +3,7 @@ import django.core.handlers
 db_config = threading.local()
 
 
-class AdminRouterConfigMiddleWare():
+class DynDBRouterByURLConfigMiddleWare():
     def __init__(self, get_response):
         self.get_response = get_response
 
@@ -12,9 +12,11 @@ class AdminRouterConfigMiddleWare():
         return response
 
     def process_view(self, request, view_func, view_args, view_kwargs):
-        if 'dbid' in view_kwargs:
-            dbid = view_kwargs.pop('dbid')
-            db_config.dbid = dbid
-
+        if 'db_key' in view_kwargs:
+            db_key = view_kwargs['db_key']
+            db_config.db_key = db_key
+        else:
+            db_config.db_key = 'default'
         return view_func(request, *view_args, **view_kwargs)
-        
+
+

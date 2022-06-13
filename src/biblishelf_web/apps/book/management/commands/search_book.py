@@ -16,9 +16,10 @@ class Command(BaseCommand):
     def handle(self, path=None, extname=None, *args, **options):
         path = os.path.abspath(path)
         ignore_rule = options['ignore_rule']
-        self.repo = RepoModel.get_repo_form_path(path)
-        self.repo_root_path = RepoModel.get_repo_root_from_path(path)
         self.db = RepoModel.load_database_from_path(path)
+
+        self.repo = RepoModel.get_repo_form_path(path, db=self.db)
+        self.repo_root_path = RepoModel.get_repo_root_from_path(path)
 
         assert isinstance(self.repo, RepoModel)
 

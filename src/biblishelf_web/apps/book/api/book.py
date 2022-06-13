@@ -37,7 +37,6 @@ class BookModelSerializer(serializers.ModelSerializer):
             return json.loads(obj.info)
 
 
-
 class BooleanEmptyCharFilter(django_filters.Filter):
     field_class = django.forms.NullBooleanField
 
@@ -92,7 +91,7 @@ class BookListApiView(generics.ListCreateAPIView):
     )
 
     def get_queryset(self):
-        db = self.kwargs.get('db', 'default')
+        db = self.kwargs.get('db_key', 'default')
         return BookModel.objects.using(db).select_related(
             'resource',
             'resource__mime_type',
@@ -109,5 +108,5 @@ class BookRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = BookModelSerializer
 
     def get_queryset(self):
-        db = self.kwargs.get('db', 'default')
+        db = self.kwargs.get('db_key', 'default')
         return BookModel.objects.using(db).all()

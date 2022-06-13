@@ -20,7 +20,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'biblishelf_web.middleware.AdminRouterConfigMiddleWare',
+    'biblishelf_web.middleware.DynDBRouterByURLConfigMiddleWare',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     "corsheaders.middleware.CorsMiddleware",
@@ -47,4 +47,4 @@ TEMPLATES = [
     },
 ]
 
-DATABASE_ROUTERS = ['biblishelf_web.dbroute.AdminRouter']
+DATABASE_ROUTERS = ['biblishelf_web.dbroute.DynDBSwitchByURLRouter']

@@ -21,9 +21,10 @@ class Command(BaseCommand):
 
     def handle(self, path=None, extname=None, *args, **options):
         repo_root_path = os.path.abspath(path)
-        self.repo = RepoModel.get_repo_form_path(repo_root_path)
-        self.repo_root_path = RepoModel.get_repo_root_from_path(repo_root_path)
         self.db = RepoModel.load_database_from_path(repo_root_path)
+
+        self.repo = RepoModel.get_repo_form_path(repo_root_path, db=self.db)
+        self.repo_root_path = RepoModel.get_repo_root_from_path(repo_root_path)
 
         for resource, file_path in self.repo.iter_resource_abspath(self.db, self.repo_root_path):
             if BookModel.objects.using(self.db).filter(resource=resource).exclude(isbn__isnull=True).count() > 0:
@@ -60,6 +61,9 @@ class Command(BaseCommand):
 
     def iter_barcode(self, file_path):
         page_number = 0
+        if not os.path.exists(file_path):
+            print('file not exist')
+            return
         with open(file_path, 'rb') as fp:
             try:
                 pdf = PyPDF2.PdfFileReader(fp)

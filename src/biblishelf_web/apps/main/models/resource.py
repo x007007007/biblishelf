@@ -19,7 +19,7 @@ class ResourceModel(models.Model):
         unique_together = [("size", "sha1"), ("size", "md5"), ("size", "ed2k_hash")]
 
     @classmethod
-    def get_or_create_from_fp(cls, fp):
+    def get_or_create_from_fp(cls, fp, db=None):
         from .mime_type import MimeTypeModel
         assert fp.mode == "rb"
         md5 = hashlib.md5()
@@ -33,7 +33,7 @@ class ResourceModel(models.Model):
         sha1.update(chuck)
         md5.update(chuck)
 
-        mime = MimeTypeModel.get_from_chuck(chuck)
+        mime = MimeTypeModel.get_from_chuck(chuck, db=db)
 
         size += len(chuck)
         while len(chuck) == 9500*1024:
@@ -42,7 +42,7 @@ class ResourceModel(models.Model):
             sha1.update(chuck)
             md5.update(chuck)
             size += len(chuck)
-        res, is_create = cls.objects.get_or_create(
+        res, is_create = cls.objects.using(db).get_or_create(
             size=size,
             sha1=sha1.hexdigest(),
             md5=md5.hexdigest(),
@@ -52,6 +52,6 @@ class ResourceModel(models.Model):
         return res, is_create
 
     @classmethod
-    def get_or_create_from_abs_path(cls, path):
+    def get_or_create_from_abs_path(cls, path, db=None):
         with open(path, "rb") as fp:
-            return cls.get_or_create_from_fp(fp)
+            return cls.get_or_create_from_fp(fp, db=db)

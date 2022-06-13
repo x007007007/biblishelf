@@ -38,7 +38,6 @@ class RepoModel(models.Model):
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': os.path.join(root_path, ".bibrepo\index.sqlite3"),
         }
-        cls.migrate(m_uuid)
         return m_uuid
 
     @classmethod
@@ -92,13 +91,13 @@ class RepoModel(models.Model):
             return cls.get_repo_root_from_path(parent_path)
 
     @classmethod
-    def get_repo_form_path(cls, curp):
+    def get_repo_form_path(cls, curp, db):
         repo_root = cls.get_repo_root_from_path(curp)
         repo_meta_path = os.path.join(repo_root, '.bibrepo/meta.json')
         if os.path.exists(repo_meta_path):
             with open(repo_meta_path) as fp:
                 meta = json.load(fp)
-                return cls.objects.get_or_create(
+                return cls.objects.using(db).get_or_create(
                     defaults=dict(
                         name=meta['repo'],
                     ),
@@ -110,7 +109,7 @@ class RepoModel(models.Model):
         from .path import PathModel
         file_path = os.path.abspath(file_path)
         root_path = os.path.abspath(root_path)
-        resource, _ = ResourceModel.get_or_create_from_abs_path(file_path)
+        resource, _ = ResourceModel.get_or_create_from_abs_path(file_path, db=db)
         path, _ = PathModel.objects.using(db).get_or_create(
             defaults=dict(
                 file_modify_time=datetime.datetime.fromtimestamp(os.path.getmtime(file_path), tz=pytz.utc),
@@ -128,8 +127,8 @@ class RepoModel(models.Model):
         from .resource import ResourceModel
         from .path import PathModel
         for resource in ResourceModel.objects.using(db).filter(pathmodel__repo=self):
-            res = resource.pathmodel_set.order_by('-file_access_time').first()
-            assert isinstance(res, PathModel)
-            yield resource, os.path.join(base_root, res.path)
+            if res := resource.pathmodel_set.using(db).order_by('-file_access_time').first():
+                assert isinstance(res, PathModel), type(res)
+                yield resource, os.path.join(base_root, res.path)
 
 
