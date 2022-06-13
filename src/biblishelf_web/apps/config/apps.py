@@ -12,7 +12,6 @@ class BiblishelfConfigConfig(AppConfig):
     def ready(self):
         from .models import RepoConfigModel  # or...
         RepoConfigModel = self.get_model('RepoConfigModel')
-        for config in RepoConfigModel.objects.all():
-            assert isinstance(config, RepoConfigModel)
+        for config in RepoConfigModel.objects.only('path').all():
             if k := config.update_database_map():
                 print(f"config db: {k}")

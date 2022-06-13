@@ -12,6 +12,7 @@ logger = logging.Logger(__name__)
 
 class RepoConfigModel(models.Model):
     path = models.CharField(max_length=254)
+    is_exist = models.BooleanField(default=True)
 
     @classmethod
     def get_repo_path_map(cls) -> dict[str, 'RepoConfigModel']:

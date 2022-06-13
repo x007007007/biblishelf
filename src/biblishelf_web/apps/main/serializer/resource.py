@@ -22,6 +22,7 @@ class PathModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = PathModel
         fields = [
+            'id',
             'path',
             'repo',
         ]
