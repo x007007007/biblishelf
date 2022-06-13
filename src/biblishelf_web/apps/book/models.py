@@ -14,14 +14,15 @@ def _book_cover_uploader(obj, filename):
 class BookModel(ExtendResource):
     publisher = models.ForeignKey("BookPublishing", null=True, blank=True, on_delete=models.CASCADE)
     page_number = models.PositiveIntegerField(default=0)
-    isbn = models.CharField(max_length=64, null=True, blank=True)
-    douban_id = models.CharField(max_length=64, null=True, blank=True)
+    isbn = models.CharField(max_length=64, null=False, default="", blank=True)
+    douban_id = models.CharField(max_length=64, null=False, default="", blank=True)
     parent = models.ForeignKey('BookModel', related_name='children', null=True, blank=True, on_delete=models.CASCADE)
 
     cover = PortableImageField(
         'cover',
         upload_to=_book_cover_uploader,
-        null=True,
+        null=False,
+        default="",
         blank=True,
     )
     info = models.TextField("info", null=True, blank=True)
@@ -60,4 +61,7 @@ class BookModel(ExtendResource):
 
 class BookPublishing(models.Model):
     name = models.CharField(max_length=64)
+
+    def __str__(self):
+        return f"<{self.__class__.__name__} ({self.id}) {self.name}>"
 

@@ -19,7 +19,7 @@ class Command(BaseCommand):
         m = RepoConfigModel.get_repo_path_map()
         repo_config = m[db]
 
-        for book in BookModel.objects.using(db).exclude(info__isnull=True, douban_id__isnull=True):
+        for book in BookModel.objects.using(db).exclude(info__isnull=True, douban_id__isnull=True, cover__isnull=True):
             info = json.loads(book.info)
             if publisher_name := info.get('publisher'):
                 publish, _ = BookPublishing.objects.using(db).get_or_create(name=publisher_name)
