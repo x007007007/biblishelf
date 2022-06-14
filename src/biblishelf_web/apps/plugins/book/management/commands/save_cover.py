@@ -4,7 +4,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.core.files.base import ContentFile
 from biblishelf_web.apps.main.models import RepoModel, ResourceModel
 from biblishelf_web.apps.config.models import RepoConfigModel
-from biblishelf_web.apps.book.models import BookModel, BookPublishing
+from biblishelf_web.apps.plugins.book.models import BookModel, BookPublishing
 import json
 import requests
 

@@ -16,7 +16,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'biblishelf_web.apps.config',
     'biblishelf_web.apps.main',
-    'biblishelf_web.apps.book',
+    'biblishelf_web.apps.plugins.book',
 ]
 
 MIDDLEWARE = [

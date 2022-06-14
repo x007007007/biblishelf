@@ -7,7 +7,7 @@ from django.db.models import Count
 import django.forms
 from biblishelf_web.apps.main.serializer import ResourceModelSerializer
 
-from biblishelf_web.apps.book.models import BookModel
+from biblishelf_web.apps.plugins.book.models import BookModel
 from biblishelf_web.apps.main.models import PathModel
 from django.db.models import Prefetch
 import django_filters

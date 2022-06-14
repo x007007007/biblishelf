@@ -35,9 +35,7 @@ class RepoModel(models.Model):
         django 连接数据库
         """
         root_path = cls.get_repo_root_from_path(curp)
-        repo_meta_path = os.path.join(root_path, '.bibrepo/meta.json')
-        with open(repo_meta_path) as fp:
-            meta = json.load(fp)
+        meta = cls.get_repo_meta_form_root(root_path)
         m_uuid = meta['uuid']
         connections.databases[m_uuid] = {
             'ENGINE': 'django.db.backends.sqlite3',
@@ -46,46 +44,10 @@ class RepoModel(models.Model):
         return m_uuid
 
     @classmethod
-    def migrate(cls, database):
-        from django.apps import apps
-        connection = connections[database]
-        connection.prepare_database()
-        with connection.cursor() as cursor:
-            tables = connection.introspection.table_names(cursor)
-        # Build the manifest of apps and models that are to be synchronized.
-        all_models = [
-            (
-                app_config.label,
-                router.get_migratable_models(
-                    app_config, connection.alias, include_auto_created=False
-                ),
-            )
-            for app_config in apps.get_app_configs()
-            if app_config.models_module is not None
-              and app_config.label in ['biblishelf_main', 'biblishelf_book']
-        ]
-        def model_installed(model):
-            opts = model._meta
-            converter = connection.introspection.identifier_converter
-            return not (
-                (converter(opts.db_table) in tables)
-                or (
-                    opts.auto_created
-                    and converter(opts.auto_created._meta.db_table) in tables
-                )
-            )
+    def migrate(cls, root):
+        meta = cls.get_repo_meta_form_root(root)
+        pass
 
-        manifest = {
-            app_name: list(filter(model_installed, model_list))
-            for app_name, model_list in all_models
-        }
-        with connection.schema_editor() as editor:
-            for app_name, model_list in manifest.items():
-                for model in model_list:
-                    # Never install unmanaged models, etc.
-                    if not model._meta.can_migrate(connection):
-                        continue
-                    editor.create_model(model)
 
     @classmethod
     def save_repo_meta(cls, config, root):
@@ -102,20 +64,21 @@ class RepoModel(models.Model):
     def get_repo_meta_form_root(cls, root):
         repo_meta_path = os.path.join(root, '.bibrepo/meta.json')
         repo_meta_toml_path = os.path.join(root, '.bibrepo/meta.toml')
-        if os.path.exists(repo_meta_path):
-            with open(repo_meta_path) as fp:
-                return json.load(fp)
-        elif os.path.exists(repo_meta_toml_path):
+        if os.path.exists(repo_meta_toml_path):
             with open(repo_meta_toml_path) as fp:
                 return toml.load(fp)
+        elif os.path.exists(repo_meta_path):
+            with open(repo_meta_path) as fp:
+                return json.load(fp)
+
 
     @classmethod
     def get_repo_root_from_path(cls, curp):
         repo_meta_path = os.path.join(curp, '.bibrepo/meta.json')
         repo_meta_toml_path = os.path.join(curp, '.bibrepo/meta.toml')
-        if os.path.exists(repo_meta_path):
+        if os.path.exists(repo_meta_toml_path):
             return curp
-        elif os.path.exists(repo_meta_toml_path):
+        elif os.path.exists(repo_meta_path):
             return curp
         if (parent_path := os.path.dirname(curp)) != curp:
             return cls.get_repo_root_from_path(parent_path)

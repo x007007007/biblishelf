@@ -55,7 +55,7 @@ class PortableImageField(ImageField):
         super(PortableImageField, self).__init__(*args, **kwargs)
 
     def pre_save(self, model_instance, add):
-        from biblishelf_web.apps.book.models import BookModel
+        from biblishelf_web.apps.plugins.book.models import BookModel
         assert isinstance(model_instance, BookModel)
         file = getattr(model_instance, self.attname)
         if file and not file._committed:

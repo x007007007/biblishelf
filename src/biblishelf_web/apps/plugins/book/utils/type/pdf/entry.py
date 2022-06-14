@@ -1,6 +1,6 @@
-from biblishelf_web.apps.book.utils.type.base import BookBaseFileType as BaseFileType
+from biblishelf_web.apps.plugins.book.utils.type.base import BookBaseFileType as BaseFileType
 from biblishelf_web.apps.main.models import ResourceModel
-from biblishelf_web.apps.book.models import BookModel
+from biblishelf_web.apps.plugins.book.models import BookModel
 from PyPDF2 import PdfFileReader
 import PyPDF2.errors
 import re

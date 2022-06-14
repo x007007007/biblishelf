@@ -20,7 +20,6 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path(r'admin/', admin.site.urls),
-    path(r'api/', include("biblishelf_web.apps.book.urls")),
     path(r'api/', include("biblishelf_web.apps.config.urls")),
     path(r'', include("biblishelf_web.apps.main.urls")),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

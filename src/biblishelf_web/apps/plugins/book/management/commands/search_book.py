@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
 from biblishelf_web.apps.main.models import RepoModel, ResourceModel
-from biblishelf_web.apps.book.models import BookModel
+from biblishelf_web.apps.plugins.book.models import BookModel
 import os
 import fnmatch
 
