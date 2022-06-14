@@ -14,6 +14,7 @@ class RepoModel(models.Model):
     uuid = models.UUIDField(unique=True, null=False)
     is_main = models.BooleanField(default=False)
     is_portable = models.BooleanField(default=True)
+    auto_sync = models.BooleanField(default=True)
     media_type = models.CharField(
         choices=(
             ("disc", "disc"),

@@ -5,3 +5,4 @@ from .repo import RepoModel
 from .resource import ResourceModel
 from .extend_resource import ExtendResource
 from .sub_repo import SubRepoModel
+from .repo_hash import RepoHashModel
