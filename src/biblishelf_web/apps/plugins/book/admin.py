@@ -5,7 +5,14 @@ from .models import BookModel, BookPublishing
 
 @admin.register(BookModel)
 class BookAdmin(admin.ModelAdmin):
-    list_display = ("pk", "name", "isbn", "page_number", "info")
+    list_display = (
+        "pk",
+        "name",
+        "isbn",
+        "isbn_str",
+        "page_number",
+        "info",
+    )
 
 
 @admin.register(BookPublishing)

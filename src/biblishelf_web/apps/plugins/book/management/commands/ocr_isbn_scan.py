@@ -14,7 +14,7 @@ import re
 
 class Command(BaseCommand):
     help = ''
-    read_page_number = 1
+    read_page_number = 5
 
     iter_barcode_failed = 0
     failed = 0
@@ -89,10 +89,8 @@ class Command(BaseCommand):
                 traceback.print_exc()
         for page, image in self.iter_image(file_path, page_number):
             image.save("output.png")
-            input()
-            continue
             for brcode in decode_barcode(image):
-                yield i, brcode
+                yield page, brcode
 
     def iter_image(self, file_path, page_number):
         if page_number <= self.read_page_number * 2:

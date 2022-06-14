@@ -11,11 +11,27 @@ def _book_cover_uploader(obj, filename):
     return f"cover/{filename}"
 
 
+class IsbnBookInfoModel(models.Model):
+    name = models.CharField(max_length=64)
+    publisher = models.ForeignKey("BookPublishing", null=True, blank=True, on_delete=models.CASCADE)
+    isbn = models.CharField(max_length=64, unique=True)
+    douban_id = models.CharField(max_length=64, default="", blank=True, null=True)
+    page_number = models.PositiveIntegerField(default=0)
+    cover = PortableImageField(
+        'cover',
+        upload_to=_book_cover_uploader,
+        null=False,
+        default="",
+        blank=True,
+    )
+
+
 class BookModel(ExtendResource):
     publisher = models.ForeignKey("BookPublishing", null=True, blank=True, on_delete=models.CASCADE)
-    page_number = models.PositiveIntegerField(default=0)
-    isbn = models.CharField(max_length=64, null=False, default="", blank=True)
-    douban_id = models.CharField(max_length=64, null=False, default="", blank=True)
+    page_number = models.PositiveIntegerField(help_text='resource page number', default=0)
+    isbn_str = models.CharField(max_length=64, null=True, blank=True, default="")
+    isbn = models.ForeignKey("IsbnBookInfoModel", null=True, on_delete=models.SET_NULL, blank=True)
+    douban_id = models.CharField(max_length=64, null=True, blank=True, default="")
     parent = models.ForeignKey('BookModel', related_name='children', null=True, blank=True, on_delete=models.CASCADE)
 
     cover = PortableImageField(

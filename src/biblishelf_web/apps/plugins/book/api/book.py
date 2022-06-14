@@ -81,7 +81,7 @@ class ExistSubSetFilter(django_filters.Filter):
 class BookFilter(django_filters.FilterSet):
     exist_isbn = BooleanEmptyCharFilter(
         label='exist isbn',
-        field_name='isbn',
+        field_name='isbn_str',
         exclude=True,
     )
     exist_douban_id = BooleanEmptyCharFilter(
