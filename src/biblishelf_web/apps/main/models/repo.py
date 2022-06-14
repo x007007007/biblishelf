@@ -6,6 +6,7 @@ import time
 import datetime
 import pytz
 from django.db import connections
+import toml
 
 
 class RepoModel(models.Model):
@@ -29,6 +30,9 @@ class RepoModel(models.Model):
 
     @classmethod
     def load_database_from_path(cls, curp):
+        """
+        django 连接数据库
+        """
         root_path = cls.get_repo_root_from_path(curp)
         repo_meta_path = os.path.join(root_path, '.bibrepo/meta.json')
         with open(repo_meta_path) as fp:
@@ -83,9 +87,34 @@ class RepoModel(models.Model):
                     editor.create_model(model)
 
     @classmethod
+    def save_repo_meta(cls, config, root):
+        repo_meta_path = os.path.join(root, '.bibrepo/meta.json')
+        repo_meta_toml_path = os.path.join(root, '.bibrepo/meta.toml')
+        old_config = cls.get_repo_meta_form_root(root)
+        old_config.update(config)
+        with open(repo_meta_path, 'w', encoding='utf-8') as fp:
+            json.dump(old_config, fp)
+        with open(repo_meta_toml_path, 'w', encoding='utf-8') as fp:
+            toml.dump(old_config, fp)
+
+    @classmethod
+    def get_repo_meta_form_root(cls, root):
+        repo_meta_path = os.path.join(root, '.bibrepo/meta.json')
+        repo_meta_toml_path = os.path.join(root, '.bibrepo/meta.toml')
+        if os.path.exists(repo_meta_path):
+            with open(repo_meta_path) as fp:
+                return json.load(fp)
+        elif os.path.exists(repo_meta_toml_path):
+            with open(repo_meta_toml_path) as fp:
+                return toml.load(fp)
+
+    @classmethod
     def get_repo_root_from_path(cls, curp):
         repo_meta_path = os.path.join(curp, '.bibrepo/meta.json')
+        repo_meta_toml_path = os.path.join(curp, '.bibrepo/meta.toml')
         if os.path.exists(repo_meta_path):
+            return curp
+        elif os.path.exists(repo_meta_toml_path):
             return curp
         if (parent_path := os.path.dirname(curp)) != curp:
             return cls.get_repo_root_from_path(parent_path)
@@ -93,16 +122,13 @@ class RepoModel(models.Model):
     @classmethod
     def get_repo_form_path(cls, curp, db):
         repo_root = cls.get_repo_root_from_path(curp)
-        repo_meta_path = os.path.join(repo_root, '.bibrepo/meta.json')
-        if os.path.exists(repo_meta_path):
-            with open(repo_meta_path) as fp:
-                meta = json.load(fp)
-                return cls.objects.using(db).get_or_create(
-                    defaults=dict(
-                        name=meta['repo'],
-                    ),
-                    uuid=meta['uuid'],
-                )[0]
+        meta = cls.get_repo_meta_form_root(repo_root)
+        return cls.objects.using(db).get_or_create(
+            defaults=dict(
+                name=meta['repo'],
+            ),
+            uuid=meta['uuid'],
+        )[0]
 
     def add_file(self, db, root_path, file_path):
         from .resource import ResourceModel
@@ -132,5 +158,3 @@ class RepoModel(models.Model):
                 yield resource, os.path.join(base_root, res.path)
             else:
                 print(f'{resource} no path')
-
-

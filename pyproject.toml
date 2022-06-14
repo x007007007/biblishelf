@@ -28,6 +28,7 @@ dependencies = [
     "Pillow>=9.1.1",
     "pathlab>=0.2",
     "selenium>=4.2.0",
+    "toml>=0.10.2",
 ]
 requires-python = ">3.9"
 license = {text = "MIT"}

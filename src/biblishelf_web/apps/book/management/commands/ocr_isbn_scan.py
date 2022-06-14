@@ -7,13 +7,18 @@ from pdf2image import convert_from_path
 import PyPDF2
 from PIL import Image
 from pyzbar.pyzbar import decode as decode_barcode
+import cv2
 import traceback
 import re
 
 
 class Command(BaseCommand):
     help = ''
-    read_page_number = 5
+    read_page_number = 1
+
+    iter_barcode_failed = 0
+    failed = 0
+    pypdf_failed = 0
 
     def add_arguments(self, parser):
         parser.add_argument('path', type=str, default=os.curdir)
@@ -39,6 +44,8 @@ class Command(BaseCommand):
             except KeyboardInterrupt:
                 return
             except:
+                self.iter_barcode_failed += 1
+                self.failed += 1
                 traceback.print_exc()
             url = None
             isbn_num = None
@@ -52,6 +59,11 @@ class Command(BaseCommand):
                     print(cod)
             if len(isbn_list) > 0:
                 self.set_isbn(resource, isbn_num, url)
+        print(f"""
+{self.failed}
+{self.iter_barcode_failed}
+{self.pypdf_failed}
+        """)
 
     def set_isbn(self, resource, isbn_num, url):
         BookModel.objects.using(self.db).update_or_create(
@@ -73,12 +85,22 @@ class Command(BaseCommand):
                 page_number = pdf.getNumPages()
                 self.page_number = page_number
             except:
-                traceback.print_exc(
-                )
-        for i, image in enumerate(convert_from_path(file_path, last_page=self.read_page_number), start=0):  # type: Image
-            for bcode in decode_barcode(image):
-                yield i, bcode
-        if page_number > self.read_page_number:
-            for i, image in enumerate(convert_from_path(file_path, first_page=page_number - self.read_page_number, last_page=page_number), start=0):
-                for bcode in decode_barcode(image):
-                    yield page_number + i, bcode
+                self.pypdf_failed += 1
+                traceback.print_exc()
+        for page, image in self.iter_image(file_path, page_number):
+            image.save("output.png")
+            input()
+            continue
+            for brcode in decode_barcode(image):
+                yield i, brcode
+
+    def iter_image(self, file_path, page_number):
+        if page_number <= self.read_page_number * 2:
+            for i, image in enumerate(convert_from_path(file_path, last_page=self.read_page_number * 2), start=0):  # type: Image
+                yield i, image
+        else:
+            for i, image in enumerate(convert_from_path(file_path, last_page=self.read_page_number), start=0):
+                yield i, image
+            end_start = page_number - self.read_page_number + 1
+            for i, image in enumerate(convert_from_path(file_path, first_page=end_start), start=end_start):
+                yield i, image
